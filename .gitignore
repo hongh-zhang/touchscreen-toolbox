@@ -3,6 +3,10 @@
 *.h5
 *.mp4
 
+# tensorflow checkpoint
+*.data-00000-of-00001
+*.index
+*.meta
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
