@@ -1,3 +1,9 @@
+# large files... for now
+*.pickle
+*.h5
+*.mp4
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
