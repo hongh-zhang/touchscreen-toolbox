@@ -1,7 +1,6 @@
 # large files... for now
 *.pickle
 *.h5
-*.mp4
 
 # tensorflow checkpoint
 *.data-00000-of-00001
