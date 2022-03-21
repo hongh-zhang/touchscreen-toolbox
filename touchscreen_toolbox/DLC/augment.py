@@ -160,7 +160,7 @@ if __name__ == "__main__":
         if not sub:
 
             # find the labels.csv file
-            csv = [f for f in files if 'csv' in f]
+            csv = [f for f in files if f.endswith('csv')]
 
             # ignore irrelevant folders
             if csv:
