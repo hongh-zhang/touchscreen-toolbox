@@ -6,7 +6,7 @@ multianimalproject: true
 identity: false
 
     # Project path (change when moving around)
-project_path: /DLC-honghzhang-2022-02-31
+project_path: touchscreen_toolbox/DLC
 
     # Annotation data set configuration (and individual video cropping parameters)
 video_sets:
