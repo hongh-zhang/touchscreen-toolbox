@@ -1,3 +1,6 @@
+# test folder
+tests/
+
 # large files... for now
 *.pickle
 *.h5
