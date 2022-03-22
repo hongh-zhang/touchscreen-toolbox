@@ -11,8 +11,8 @@ def analyze(path_cfg : str, video : str, verbosity : bool = False):
         dlc.analyze_videos(path_cfg, video, videotype='mp4', batchsize=32)
         dlc.filterpredictions(path_cfg, video, videotype='mp4', filtertype='median')
     else:
-        # silence tensorflow
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+        # silence tensorflow            <- NOT WORKING!
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
         # silence dlc
         with nostdout():
@@ -22,17 +22,18 @@ def analyze(path_cfg : str, video : str, verbosity : bool = False):
 
 def cleanup(folder_path, folder2move, name):
 
+    name = name[:-4].split('/')[-1]
     _, _, files = list(os.walk(folder_path))[0]
 
     for f in files:
         # raw prediction files
-        if f.endswith('.h5') or f.endswith('.pickle'):
+        if (f.endswith('.h5') or f.endswith('.pickle')) and f.startswith(name):
             shutil.move(os.path.join(folder_path, f), 
                   os.path.join(folder2move, f))
 
         # coordinates csv
-        elif f.endswith('.csv') and f.startswith(os.path.join(folder_path, name[:-4])):
-            os.rename(os.path.join(folder_path, f), os.path.join(folder_path, name[:-4]+'.csv'))
+        elif f.endswith('.csv') and f.startswith(name):
+            os.rename(os.path.join(folder_path, f), os.path.join(folder_path, name+'_raw.csv'))
             print('renamed csv')
     print("Reorganized files")
 
