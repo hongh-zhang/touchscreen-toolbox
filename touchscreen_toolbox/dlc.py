@@ -36,6 +36,7 @@ def cleanup(folder_path, folder2move, name):
             os.rename(os.path.join(folder_path, f), os.path.join(folder_path, name+'_raw.csv'))
             print('renamed csv')
     print("Reorganized files")
+    return name
 
 
 # functions to suppress output
