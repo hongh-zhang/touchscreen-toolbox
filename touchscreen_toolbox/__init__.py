@@ -1,2 +1,2 @@
-import touchscreen_toolbox.preprocess
-import touchscreen_toolbox.dlc
+from touchscreen_toolbox import preprocess
+from touchscreen_toolbox.dlc import (analyze, cleanup)
