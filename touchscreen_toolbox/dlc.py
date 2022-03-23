@@ -7,7 +7,7 @@ from touchscreen_toolbox.utils import *
 
 def analyze(path_config_file, folder_path, video_path):
 
-    print(f"Analyzing {video}...")
+    print(f"Analyzing {video_path}...")
 
     # call DLC to analyze video
     dlc_analyze(path_config_file, video_path)

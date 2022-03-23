@@ -1,16 +1,13 @@
 import os
+import sys
 import shutil
 import numpy as np
 import pandas as pd
 import touchscreen_toolbox as tb
 
-# 
-SAVE_STDOUT = sys.stdout  
-def reset_std(): sys.stdout = SAVE_STDOUT
 
 path_config_file = "touchscreen_toolbox/DLC/config.yaml"
 the_folder = 'tests'
-path_config_file
 
 for (folder_path, _, files) in list(os.walk(the_folder)):
 
@@ -36,7 +33,7 @@ for (folder_path, _, files) in list(os.walk(the_folder)):
             new_video = tb.preprocess(video)
             
             # analyze
-            tb.analyze(new_video)
+            tb.analyze(path_config_file, folder_path, new_video)
 
             print("-----------------------------\n")
 
