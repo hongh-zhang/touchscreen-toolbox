@@ -68,8 +68,6 @@ def cleanup(folder_path, file_name, folder2move='DLC'):
             os.rename(os.path.join(folder_path, f),
                       os.path.join(folder_path, file_name + '_raw.csv'))
 
-    return name
-
 
 # functions to suppress output
 # ---------------------------------------------
