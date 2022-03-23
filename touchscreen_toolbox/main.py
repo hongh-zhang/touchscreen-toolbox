@@ -30,7 +30,7 @@ def initialize(folder_path):
     if not os.path.exists(stats_path):
         mk_dir(dlc_folder)
         mk_dir(rst_folder)
-        STATS_TEMPL.to_csv(stats_path, index=False)
+        STATS_TEMPL.to_csv(stats_path, index=False, header=False)
         print(f"Initialized under {folder_path}")
         return videos
     
@@ -70,7 +70,7 @@ def analyze_video(video_path):
         stats.to_csv(stats_path, index=False)
     
     # standardize
-    data.drop(CCOLS, axis=1)
+    data.drop(CCOLS, axis=1, inplace=True)
     postprocess.standardize(data)
     postprocess.fillna(data)
     data.to_csv(os.path.join(folder_path, RST_FOLDER, video_name[:-4] + '.csv'))
