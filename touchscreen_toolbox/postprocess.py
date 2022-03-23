@@ -134,8 +134,7 @@ def postprocess(folder_path, dlcfolder='DLC'):
 
     dlcfolder = os.path.join(folder_path, dlcfolder)
     headers1 = ['Video'] + [i[:-4] for i in CCOLS for j in '1234']
-    headers2 = ['-'] + \
-        [j for i in CCOLS for j in ('#of0', 'cons', '1stQ', '10thQ')]
+    headers2 = ['-'] + [j for i in CCOLS for j in ('#of0', 'cons', '1stQ', '10thQ')]
     values = []
 
     for name in files:
