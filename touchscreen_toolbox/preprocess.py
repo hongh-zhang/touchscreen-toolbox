@@ -18,6 +18,7 @@ def preprocess(video_in: str):
 
     """
     name = video_in
+    proc_ls = []
 
     # brightness
     if brightness_check(video_in):
@@ -27,10 +28,11 @@ def preprocess(video_in: str):
             print(f"Preprocessed video '{name}' exists, removing it")
             os.remove(name)
         increase_exposure(video_in, name)
+        proc_ls.append('b')
 
     # TODO: anything else?
 
-    return name
+    return name, proc_ls
 
 
 def map_video(
