@@ -7,8 +7,8 @@ from touchscreen_toolbox.utils import *
 def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
     """Call DLC to analyze video"""
     
+    video_name = os.path.basename(video_path)
     folder_path = os.path.dirname(video_path)
-    curr_files = os.listdir(folder_path)
     
     if verbosity:
         dlc.analyze_videos(DLC_CONFIG, video_path,
@@ -41,11 +41,11 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
             sys.stdout = save_stdout
             raise err
         sys.stdout = save_stdout
+
+    csv = [f for f in os.listdir(folder_path) if f.endswith('.csv') \
+           and f.startswith(video_name[:-4])][0]
     
-    new_files = [f for f in os.listdir(folder_path) if f not in curr_files]
-    csv = [f for f in new_files if f.endswith('.csv')][0]
-    
-    return csv, new_files
+    return csv
 
 # functions to suppress output
 # ---------------------------------------------
