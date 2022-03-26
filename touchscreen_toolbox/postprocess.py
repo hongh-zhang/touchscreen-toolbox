@@ -113,51 +113,36 @@ def fillna(df: pd.DataFrame):
 
 
 def statistics(data: pd.DataFrame):
-    value = []
+    frames = len(data)
+    value = [frames]
     for col_name in CCOLS:
         col = data[col_name].fillna(0)
         zeros = (col == 0)
         nums = zeros.sum()
+        percent = round(nums / frames, 2)
         consecutive = max([len(list(g))
                           for k, g in groupby(zeros) if k]) if nums > 0 else 0
         first = str(round(col.quantile(q=0.01), 2))
         tenth = str(round(col.quantile(q=0.10), 2))
-        value += [nums, consecutive, first, tenth]
+        value += [nums, percent, consecutive, first, tenth]
     return value
 
 
-def postprocess(folder_path, dlcfolder='DLC'):
+def postprocess(folder_path, csv_name, video_name, proc_ls):
+    # record into stats
+    data = read_dlc_csv(os.path.join(folder_path, csv_name))
 
-    files = [f for f in os.listdir(folder_path) if f.endswith('_raw.csv')]
-    if not files:
-        raise ValueError("No valid csv files found")
+    stats_path = os.path.join(folder_path, RST_FOLDER, STATS_NAME)
+    if os.path.exists(stats_path):
+        stats = pd.read_csv(stats_path)
+        stats.loc[len(data)] = ([video_name] + [str(proc_ls)] + statistics(data))
+        stats.to_csv(stats_path, index=False)
 
-    dlcfolder = os.path.join(folder_path, dlcfolder)
-    headers1 = ['Video'] + [i[:-4] for i in CCOLS for j in '1234']
-    headers2 = ['-'] + [j for i in CCOLS for j in ('#of0', 'cons', '1stQ', '10thQ')]
-    values = []
-
-    for name in files:
-        file = os.path.basename(name)[:-8]
-        file_path = os.path.join(folder_path, file + '_raw.csv')
-        data = pd.read_csv(file_path, skiprows=[0, 1, 2, 3],
-                           names=(['frame'] + HEADERS)).set_index('frame')
-
-        values.append([file + '.mp4'] + statistics(data))
-
-        data.drop(CCOLS, axis=1, inplace=True)
-        standardize(data)
-        fillna(data)
-
-        data.to_csv(os.path.join(folder_path, file + '.csv'))
-
-        # move raw prediction into dlc folder
-        os.rename(os.path.join(folder_path, file + '_raw.csv'),
-                  os.path.join(dlcfolder, file + '_raw.csv'))
-
-    stats = pd.DataFrame(np.vstack((headers1, headers2, values)))
-    stats.to_csv(os.path.join(folder_path, "statistics.csv"))
-    print("Statistics saved")
+    # standardize
+    data.drop(CCOLS, axis=1, inplace=True)
+    standardize(data)
+    fillna(data)
+    data.round(decimals=4).to_csv(os.path.join(folder_path, RST_FOLDER, video_name[:-4] + '.csv'))
 
 
 # DEPRECATED FUNCTIONS

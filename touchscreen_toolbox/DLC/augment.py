@@ -181,7 +181,8 @@ if __name__ == "__main__":
                     img_path = idx.split("\\")
                     # assert img_path[-1] == img_name, "Unmatched image file"
                     prefix = path2save + "\\" + \
-                        ("-".join(img_path[-2:]))[:-4]  # file extension removed
+                        ("-".join(img_path[-2:]))[:-
+                                                  4]  # file extension removed
 
                     # read image
                     img = cv2.imread(os.path.join(path, img_name))
