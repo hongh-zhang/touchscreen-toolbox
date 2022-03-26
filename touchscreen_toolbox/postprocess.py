@@ -113,16 +113,18 @@ def fillna(df: pd.DataFrame):
 
 
 def statistics(data: pd.DataFrame):
-    value = []
+    frames = len(data)
+    value = [frames]
     for col_name in CCOLS:
         col = data[col_name].fillna(0)
         zeros = (col == 0)
         nums = zeros.sum()
+        percent = nums / frames
         consecutive = max([len(list(g))
                           for k, g in groupby(zeros) if k]) if nums > 0 else 0
         first = str(round(col.quantile(q=0.01), 2))
         tenth = str(round(col.quantile(q=0.10), 2))
-        value += [nums, consecutive, first, tenth]
+        value += [nums, percent, consecutive, first, tenth]
     return value
 
 
@@ -134,13 +136,13 @@ def postprocess(folder_path, csv_name, video_name, proc_ls):
     if os.path.exists(stats_path):
         stats = pd.read_csv(stats_path)
         stats.loc[len(data)] = ([video_name] + [str(proc_ls)] + statistics(data))
-        stats.to_csv(stats_path, index=False)
+        stats.round(decimals=2).to_csv(stats_path, index=False)
 
     # standardize
     data.drop(CCOLS, axis=1, inplace=True)
     standardize(data)
     fillna(data)
-    data.to_csv(os.path.join(folder_path, RST_FOLDER, video_name[:-4] + '.csv'))
+    data.round(decimals=4).to_csv(os.path.join(folder_path, RST_FOLDER, video_name[:-4] + '.csv'))
 
 
 # DEPRECATED FUNCTIONS

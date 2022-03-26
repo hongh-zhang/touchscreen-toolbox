@@ -63,18 +63,20 @@ def analyze_video(video_path):
 
     video_name = os.path.basename(video_path)
     folder_path = os.path.dirname(video_path)
+    curr_files = os.listdir(folder_path)
 
     # preprocess
     # get new video name and a list of process applied (if any)
     new_video_path, proc_ls = preprocess(video_path)
 
     # analyze
-    csv, new_files = dlc_analyze(DLC_CONFIG, new_video_path)
+    csv = dlc_analyze(DLC_CONFIG, new_video_path)
 
     # postprocess
     postprocess(folder_path, csv, video_name, proc_ls)
     
     # relocate DLC files
+    new_files = [f for f in os.listdir(folder_path) if f not in curr_files]
     cleanup(folder_path, new_files)
 
 
