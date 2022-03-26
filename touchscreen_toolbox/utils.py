@@ -1,8 +1,10 @@
 import os
+import sys
 import shutil
 import numpy as np
 import pandas as pd
 from math import pi
+from time import (localtime, strftime)
 
 # configs
 # ------------------------
@@ -12,13 +14,13 @@ FPS = 25
 TRAY_LENGTH = 26.8  # (cm)
 
 # keypoints
-MICE = ('snout', 
-        'lEar', 
-        'rEar', 
-        'spine1', 
-        'spine2', 
-        'tail1', 
-        'tail2', 
+MICE = ('snout',
+        'lEar',
+        'rEar',
+        'spine1',
+        'spine2',
+        'tail1',
+        'tail2',
         'tail3')
 REFE = ('food_port',
         'll_corner',
@@ -53,7 +55,8 @@ CCOLS = [i for i in HEADERS if '_cfd' in i]
 
 # template for statistics.csv
 HEAD1 = ['video', 'pre'] + [i[:-4] for i in CCOLS for j in '1234']
-HEAD2 = ['-', '-'] + [j for i in CCOLS for j in ('#of0', 'cons', '1stQ', '10thQ')]
+HEAD2 = ['-', '-'] + \
+    [j for i in CCOLS for j in ('#of0', 'cons', '1stQ', '10thQ')]
 STATS_TEMPL = pd.DataFrame(np.vstack((HEAD1, HEAD2)))
 
 # distance
@@ -81,9 +84,46 @@ def mk_dir(path: str):
         shutil.rmtree(path)
     os.mkdir(path)
 
+
 def read_dlc_csv(path: str):
     return pd.read_csv(path, skiprows=[0, 1, 2, 3],
                        names=(['frame'] + HEADERS)).set_index('frame')
+
+
+def move_files(files, curr_folder, targ_folder):
+    for f in files:
+        file_path = os.path.join(curr_folder, f)
+        new_path = os.path.join(targ_folder, f)
+        os.rename(file_path, new_path)
+
+
+# logger
+# modified from
+# https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
+class Tee(object):
+    def __init__(self, file):
+        self.file = open(file, 'w')
+        self.stdout = sys.stdout
+        sys.stdout = self
+        
+    def __del__(self):
+        try:
+            self.close()
+        except: pass
+        
+    def write(self, data):
+        if data != '\n':
+            data = strftime("%H:%M:%S    ", localtime()) + data
+        self.file.write(data)
+        self.stdout.write(data)
+        
+    def flush(self): self.file.flush()
+        
+    def close(self):
+        sys.stdout = self.stdout
+        self.file.close()
+
+
 # DEPRECATED
 # ------------------------
 # def path2file(path : str):
