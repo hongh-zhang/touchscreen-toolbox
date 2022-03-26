@@ -1,0 +1,7 @@
+20:37:45    Initialized under tests\20220101
+20:37:45    Analyzing tests\20220101\2_clip.mp4
+20:38:24    Analyzing tests\20220101\6_clip.mp4
+20:38:53    Analyzing tests\20220101\7_clip.mp4
+20:38:53    Increasing brightness for 'tests\20220101\7_clip.mp4'
+20:39:22    Initialized under tests\20220102
+20:39:22    Analyzing tests\20220102\4_clip.mp4

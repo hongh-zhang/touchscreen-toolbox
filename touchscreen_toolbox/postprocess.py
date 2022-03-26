@@ -119,7 +119,7 @@ def statistics(data: pd.DataFrame):
         col = data[col_name].fillna(0)
         zeros = (col == 0)
         nums = zeros.sum()
-        percent = nums / frames
+        percent = round(nums / frames, 2)
         consecutive = max([len(list(g))
                           for k, g in groupby(zeros) if k]) if nums > 0 else 0
         first = str(round(col.quantile(q=0.01), 2))
@@ -136,7 +136,7 @@ def postprocess(folder_path, csv_name, video_name, proc_ls):
     if os.path.exists(stats_path):
         stats = pd.read_csv(stats_path)
         stats.loc[len(data)] = ([video_name] + [str(proc_ls)] + statistics(data))
-        stats.round(decimals=2).to_csv(stats_path, index=False)
+        stats.to_csv(stats_path, index=False)
 
     # standardize
     data.drop(CCOLS, axis=1, inplace=True)
