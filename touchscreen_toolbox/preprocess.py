@@ -76,8 +76,13 @@ def map_video(
     writer.release()
 
 
+def lut(frame, lut_table): return cv2.LUT(frame, lut_table)
+
+
 # brightness related functions
 # ---------------------------------------------------------
+
+FRAME2READ = 5
 
 # functions for checking brightness
 def brightness_check(video: str):
@@ -88,7 +93,10 @@ def get_brightness(video: str):
 
     # read 1st frame
     cap = cv2.VideoCapture(video)
-    ret, frame = cap.read()
+    for _ in range(FRAME2READ):
+        ret, frame = cap.read()
+        if not ret:
+            break
     cap.release()
 
     # format into 1d array of all pixel brightness
@@ -102,9 +110,6 @@ def exposure_table(gamma: float):
     gamma_table = np.power(np.arange(256) / 255, gamma) * 255
     gamma_table = np.round(gamma_table).astype(np.uint8)
     return gamma_table
-
-
-def lut(frame, lut_table): return cv2.LUT(frame, lut_table)
 
 
 def increase_exposure(video_in: str, video_out: str, value: float = 0.5):
