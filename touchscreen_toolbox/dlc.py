@@ -47,6 +47,25 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
     
     return csv
 
+
+def label_video(video_path):
+    
+    video_name  = os.path.basename(video_path)
+    folder_path = os.path.dirname(video_path)
+    dlc_folder  = os.path.join(folder_path, DLC_FOLDER)
+    
+    # find relevant files & move to video directory
+    files = [f for f in os.listdir(dlc_folder) if f.startswith(video_name[:-4])]
+    move_files(files, dlc_folder, folder_path)
+    
+    # label
+    # dlc somehow doesnt recognize relative path
+    dlc.create_labeled_video(DLC_CONFIG, os.path.abspath(video_path), videotype='mp4', save_frames = False, filtered=True)
+    
+    # move back files
+    move_files(files, folder_path, dlc_folder)
+
+
 # functions to suppress output
 # ---------------------------------------------
 # copied from Alex Martelli
