@@ -10,23 +10,23 @@ from touchscreen_toolbox.preprocess import preprocess
 from touchscreen_toolbox.postprocess import postprocess
 
 
-def analyze_folders(root, ):
+def analyze_folders(root, sort_key=lambda x: x):
     """Analyze the folder & all sub-folders"""
     tee = Tee('log.txt')
     for (folder_path, _, files) in list(os.walk(root)):
-        analyze_folder(folder_path)
+        analyze_folder(folder_path, sort_key=sort_key)
 
 
-def analyze_folder(folder_path, ):
+def analyze_folder(folder_path, sort_key=lambda x: x):
     """Analyze individual folder"""
 
-    to_analyze = initialize(folder_path)
+    to_analyze = initialize(folder_path, sort_key=sort_key)
     for video in to_analyze:
         video_path = os.path.join(folder_path, video)
         analyze_video(video_path)
 
 
-def initialize(folder_path):
+def initialize(folder_path, sort_key=lambda x: x):
     """
     Check progress of a folder,
     initialize folder/files if the folder is unprocessed,
@@ -47,14 +47,15 @@ def initialize(folder_path):
         mk_dir(rst_folder)
         STATS_TEMPL.to_csv(stats_path, index=False)
         print(f"Initialized under {folder_path}")
-        return sorted(videos)
+        return sorted(videos, sort_key=sort_key)
 
     # read progress and exclude processed videos
     else:
         analyzed = pd.read_csv(stats_path).iloc[2:, 0].values
         if not os.path.exists(dlc_folder):
             mk_dir(dlc_folder)
-        return sorted([v for v in videos if v not in analyzed])
+        return sorted([v for v in videos if v not in analyzed], 
+                      sort_key=sort_key)
 
 
 def analyze_video(video_path):

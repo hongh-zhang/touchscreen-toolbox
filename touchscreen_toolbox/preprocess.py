@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 
-B_THRESHOLD = 35  # threshold for increasing brightness
+B_THRESHOLD = 40  # threshold for increasing brightness
 
 
 def preprocess(video_in: str):
