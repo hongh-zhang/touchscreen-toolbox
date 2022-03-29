@@ -7,6 +7,7 @@ import pandas as pd
 import touchscreen_toolbox.utils as utils
 import touchscreen_toolbox.preprocess as pre
 import touchscreen_toolbox.postprocess as post
+from touchscreen_toolbox import feature
 from touchscreen_toolbox.dlc import dlc_analyze
 
 
@@ -83,7 +84,7 @@ def initialize(folder_path, sort_key=lambda x: x):
     if not os.path.exists(stats_path):
         utils.mk_dir(dlc_folder)
         utils.mk_dir(rst_folder)
-        utils.STATS_TEMPL.to_csv(stats_path, index=False)
+        utils.create_stats(stats_path)
         print(f"Initialized under {folder_path}")
         return sorted(videos, key=sort_key)
 
@@ -127,7 +128,7 @@ def analyze_video(video_path):
     data = post.standardize(data)
     
     # feature engineering
-    #data = feature(data)
+    data = feature.engineering(data)
     
     # save
     rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
@@ -144,3 +145,33 @@ def cleanup(folder_path, files):
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
     if os.path.exists(dlc_folder):
         utils.move_files(files, folder_path, dlc_folder)
+
+
+def generate_results(folder_path):
+    """(re-)Generate results from a analyzed folder"""
+    
+    dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
+    rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
+    stats_path = os.path.join(rst_folder, utils.STATS_NAME)
+    csvs = utils.find_files(dlc_folder, '.csv')
+    utils.mk_dir(rst_folder)
+    utils.create_stats(stats_path)
+    
+    videos = utils.find_files(folder_path, '.mp4')
+    for video in videos:
+        # locate csv
+        try:
+            csv = [f for f in csvs if f.startswith(video[:-4])][0]
+            data = utils.read_dlc_csv(os.path.join(dlc_folder, csv))
+        except IndexError:
+            raise Exception(f"File for {video} not found")
+
+        # postprocess
+        post.record(data, folder_path, video, [])
+        data = post.standardize(data)
+
+        # feature engineering
+        data = feature.engineering(data)
+        
+        # save
+        data.to_csv(os.path.join(rst_folder, video[:-4]+'.csv'))
