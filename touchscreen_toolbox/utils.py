@@ -58,6 +58,10 @@ HEAD1 = ['video', 'pre', 'frame'] + [i[:-4] for i in CCOLS for j in '12345']
 HEAD2 = ['-', '-', '-'] + [j for i in CCOLS for j in ('#of0', '%of0', 'cons', '1stQ', '10thQ')]
 STATS_TEMPL = pd.DataFrame(np.vstack((HEAD1, HEAD2)))
 
+def create_stats(path: str):
+    """Create empty statistics.csv at the given <path>"""
+    STATS_TEMPL.to_csv(path, index=False)
+
 # distance
 def dist1(point):
     """1 point from origin"""
@@ -76,11 +80,17 @@ def sec2frame(sec: float): return int(FPS * sec)
 # IO related
 # ------------------------
 
-def mk_dir(path: str):
+def mk_dir(path: str, force: bool = True):
     """(re)Make directory, deletes existing directory"""
     if os.path.exists(path):
-        print(f"Removing existing {os.path.basename(path)} folder")
-        shutil.rmtree(path)
+        if force:
+            print(f"Removing existing {os.path.basename(path)} folder")
+            shutil.rmtree(path)
+        
+        else:
+            print(f"Folder already exists, failed to make directory")
+            return 1
+
     os.mkdir(path)
 
 
@@ -95,6 +105,12 @@ def move_files(files, curr_folder, targ_folder):
         new_path = os.path.join(targ_folder, f)
         os.rename(file_path, new_path)
 
+def find_files(folder_path, extension):
+    """
+    Find all files under the <folder_path> with the specific <extension>,
+    e.g. find_files(/path/to/results, ".csv")
+    """
+    return [f for f in os.listdir(folder_path) if f.endswith(extension)]
 
 # logger
 # modified from

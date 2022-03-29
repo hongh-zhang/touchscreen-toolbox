@@ -40,7 +40,8 @@ def orientation(data: pd.DataFrame, pt1: str, pt2: str):
 def engineering(data : pd.DataFrame):
     # orientation
     data['orientation'] = orientation(data, 'snout', 'tail1')
-
+    data['forward'] = np.logical_and(data['orientation'] > 0, data['orientation'] < pi).astype(int)
+    
     # snout to key points
     d_cols = []
     for col in ('l_screen','m_screen','r_screen','food_port'):
@@ -49,14 +50,13 @@ def engineering(data : pd.DataFrame):
 
     # velocity
     v_cols = []
+    v_cols.append('v-snout')
+    data[v_cols[-1]] = velocity2(data, 'snout')
     for col in d_cols:
         v_cols.append('v-'+col)
         data[v_cols[-1]] = velocity1(data, col)
 
-    v_cols.append('v-snout')
-    data[v_cols[-1]] = velocity2(data, 'snout')
-
     # acceleration
     for col in v_cols:
         data['a-'+col[2:]] = velocity1(data, col)
-    return data
+    return data.round(decimals=4)
