@@ -35,33 +35,6 @@ class L_transformer():
         return np.dot(self.rotation, X.T).T * self.scale
 
 
-def standardize(data: pd.DataFrame):
-    """Standardize a csv output from DeepLabCut"""
-
-    # flip
-    data[YCOLS] *= -1
-
-    # remove fluctuation in reference points
-    for col in REFE:
-        replace_w_median(data, col)
-
-    # make lower left corner the origin
-    set_origin(data, 'll_corner')
-
-    # prepare linear transformation
-    adj = data['lr_corner_x'][0]
-    opp = - data['lr_corner_y'][0]
-    hyp = dist1((adj, opp))
-    transformer = L_transformer(cos=(adj / hyp), sin=(opp / hyp),
-                                scale=(TRAY_LENGTH / hyp))
-
-    # apply transformation (rotate + scale)
-    for xcol, ycol in zip(XCOLS, YCOLS):
-        data[[xcol, ycol]] = transformer.transform(data[[xcol, ycol]].values)
-
-# ----------------------------------------------
-
-
 def fillna(df: pd.DataFrame):
     """Handle NaNs with an average step method"""
 
@@ -112,7 +85,42 @@ def fillna(df: pd.DataFrame):
                 col.fillna(method='ffill', inplace=True)
 
 
+def standardize(data: pd.DataFrame):
+    """Standardize a csv output from DeepLabCut"""
+    
+    data.drop(CCOLS, axis=1, inplace=True)
+    
+    # flip
+    data[YCOLS] *= -1
+
+    # remove fluctuation in reference points
+    for col in REFE:
+        replace_w_median(data, col)
+
+    # make lower left corner the origin
+    set_origin(data, 'll_corner')
+
+    # prepare linear transformation
+    adj = data['lr_corner_x'][0]
+    opp = - data['lr_corner_y'][0]
+    hyp = dist1((adj, opp))
+    transformer = L_transformer(cos=(adj / hyp), sin=(opp / hyp),
+                                scale=(TRAY_LENGTH / hyp))
+
+    # apply transformation (rotate + scale)
+    for xcol, ycol in zip(XCOLS, YCOLS):
+        data[[xcol, ycol]] = transformer.transform(data[[xcol, ycol]].values)
+    
+    # fill missing values
+    fillna(data)
+    
+    return data.round(decimals=4)
+
+# ----------------------------------------------
+
+
 def statistics(data: pd.DataFrame):
+    """Produce statistics about miss predicted values"""
     frames = len(data)
     value = [frames]
     for col_name in CCOLS:
@@ -128,21 +136,13 @@ def statistics(data: pd.DataFrame):
     return value
 
 
-def postprocess(folder_path, csv_name, video_name, proc_ls):
-    # record into stats
-    data = read_dlc_csv(os.path.join(folder_path, csv_name))
-
+def record(data : pd.DataFrame, folder_path, video_name, proc_ls):
+    """Record statistics into csv"""
     stats_path = os.path.join(folder_path, RST_FOLDER, STATS_NAME)
     if os.path.exists(stats_path):
         stats = pd.read_csv(stats_path)
-        stats.loc[len(data)] = ([video_name] + [str(proc_ls)] + statistics(data))
+        stats.loc[len(stats)] = ([video_name] + [str(proc_ls)] + statistics(data))
         stats.to_csv(stats_path, index=False)
-
-    # standardize
-    data.drop(CCOLS, axis=1, inplace=True)
-    standardize(data)
-    fillna(data)
-    data.round(decimals=4).to_csv(os.path.join(folder_path, RST_FOLDER, video_name[:-4] + '.csv'))
 
 
 # DEPRECATED FUNCTIONS
