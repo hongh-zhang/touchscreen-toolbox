@@ -1,7 +1,11 @@
 # test folder
 tests/
 
-# large files... for now
+# log files
+log.txt
+logs.log
+
+# DLC files
 *.pickle
 *.h5
 
