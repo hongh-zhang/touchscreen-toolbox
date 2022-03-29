@@ -4,3 +4,4 @@ from touchscreen_toolbox import preprocess
 from touchscreen_toolbox import postprocess
 from touchscreen_toolbox.main import (
     analyze_video, analyze_folder, analyze_folders)
+from touchscreen_toolbox import feature
