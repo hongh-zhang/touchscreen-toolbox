@@ -64,18 +64,27 @@ def create_stats(path: str):
 
 # distance
 def dist1(point):
-    """1 point from origin"""
+    """Euclidean distance from the origin"""
     return np.linalg.norm(point, ord=2)
 
 
 def dist2(point1, point2):
-    """distance between 2 points"""
+    """Euclidean distance between 2 points"""
     return np.linalg.norm(point2 - point1, ord=2)
+
+
+
+def absmin(x1, x2):
+    """Absolute minimum from 2 1D sequences"""
+    a1 = np.abs(x1)
+    a2 = np.abs(x2)
+    idx = (a1 < a2).astype(int)
+    return x1*idx + x2*(1-idx)
+
 
 # time conversion
 def frame2sec(frame: int): return frame / FPS
 def sec2frame(sec: float): return int(FPS * sec)
-
 
 # IO related
 # ------------------------

@@ -2,8 +2,8 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from touchscreen_toolbox.utils import *
-
+from math import pi
+from touchscreen_toolbox import utils
 
 def distance(data: pd.DataFrame, pt1: str, pt2: str):
     """Distance between a pair of keypoints"""
@@ -38,9 +38,18 @@ def orientation(data: pd.DataFrame, pt1: str, pt2: str):
 
 
 def engineering(data : pd.DataFrame):
+    """Feature engineering"""
+    
     # orientation
-    data['orientation'] = orientation(data, 'snout', 'tail1')
-    data['forward'] = np.logical_and(data['orientation'] > 0, data['orientation'] < pi).astype(int)
+    angle = orientation(data, 'snout', 'tail1')   # angle ~ [0, 2pi]
+    data['angle'] = angle
+    data['forward'] = np.logical_and(angle > 0, angle < pi).astype(int)
+    
+    # angular velocity
+    # angle2 ~ [pi, 3pi], to keep delta-angle continuous at angle=0/2pi
+    angle2 = (angle<pi).astype(int) * 2*pi + angle
+    data['v-angle'] = utils.absmin(np.diff(angle, prepend=angle[0]), 
+                                   np.diff(angle2, prepend=angle2[0]))
     
     # snout to key points
     d_cols = []
