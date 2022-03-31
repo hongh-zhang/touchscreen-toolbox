@@ -13,7 +13,7 @@ def preprocess(video_in: str):
 
     Returns
     -------
-    name : str
+    video_in : str
         name of the processed video to continue analyzing
 
     """

@@ -4,14 +4,14 @@ import shutil
 import numpy as np
 import pandas as pd
 
-import touchscreen_toolbox.utils as utils
+from touchscreen_toolbox import utils
+from touchscreen_toolbox import feature
 import touchscreen_toolbox.preprocess as pre
 import touchscreen_toolbox.postprocess as post
-from touchscreen_toolbox import feature
 from touchscreen_toolbox.dlc import dlc_analyze
 
 
-def analyze_folders(root, sort_key=lambda x: x):
+def analyze_folders(root: str, sort_key=lambda x: int(re.match('\d+')[0])):
     """
     Analyze the folder & all sub-folders
     
@@ -29,7 +29,7 @@ def analyze_folders(root, sort_key=lambda x: x):
         analyze_folder(folder_path, sort_key=sort_key)
 
 
-def analyze_folder(folder_path, sort_key=lambda x: x):
+def analyze_folder(folder_path: str, sort_key=lambda x: x):
     """
     Analyze individual folder
         
@@ -42,14 +42,15 @@ def analyze_folder(folder_path, sort_key=lambda x: x):
         file name sorting order to be passed to sort() function
 
     """
-
+    print(f"Analyzing folder {folder_path}...")
+    
     to_analyze = initialize(folder_path, sort_key=sort_key)
     for video in to_analyze:
         video_path = os.path.join(folder_path, video)
         analyze_video(video_path)
 
 
-def initialize(folder_path, sort_key=lambda x: x):
+def initialize(folder_path: str, sort_key=lambda x: x):
     """
     Initialize folder/files if the folder is unprocessed,
     otherwise check progress and
@@ -97,7 +98,7 @@ def initialize(folder_path, sort_key=lambda x: x):
                       key=sort_key)
 
 
-def analyze_video(video_path):
+def analyze_video(video_path: str):
     """
     Analyze a video,
     
@@ -108,7 +109,7 @@ def analyze_video(video_path):
     
     """
     
-    print(f"Analyzing {video_path}...")
+    print(f"Analyzing video {video_path}...")
 
     video_name = os.path.basename(video_path)
     folder_path = os.path.dirname(video_path)
@@ -116,14 +117,17 @@ def analyze_video(video_path):
 
     # preprocess
     # get new video name and a list of process applied (if any)
+    print(f"Preprocessing...")
     new_video_path, proc_ls = pre.preprocess(video_path)
 
     # estimate
+    print(f"Calling DeepLabCut...")
     csv = dlc_analyze(utils.DLC_CONFIG, new_video_path)
     csv = os.path.join(folder_path, csv)
     data = utils.read_dlc_csv(csv)
     
     # postprocess
+    print(f"Postprocessing...")
     post.record(data, folder_path, video_name, proc_ls)
     data = post.standardize(data)
     
@@ -132,22 +136,24 @@ def analyze_video(video_path):
     
     # save
     rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
-    save_path = os.path.join(rst_folder, video_name[:-4]) if os.path.exists(rst_folder) else os.path.join(folder_path, video_name[:-4])
-    data.to_csv(save_path+'.csv')
+    save_path = os.path.join(rst_folder, video_name[:-4]+'.csv') if os.path.exists(rst_folder) \
+                else os.path.join(folder_path, video_name[:-4]+'.csv')
+    data.to_csv(save_path)
+    print(f"Saved results to {save_path}")
     
     # relocate DLC files
     new_files = [f for f in os.listdir(folder_path) if f not in curr_files+[save_path]]
     cleanup(folder_path, new_files)
 
 
-def cleanup(folder_path, files):
+def cleanup(folder_path: str, files: list):
     """Move generated files into the DLC folder"""
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
     if os.path.exists(dlc_folder):
         utils.move_files(files, folder_path, dlc_folder)
 
 
-def generate_results(folder_path):
+def generate_results(folder_path: str):
     """(re-)Generate results from a analyzed folder"""
     
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)

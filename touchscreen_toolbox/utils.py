@@ -84,7 +84,7 @@ def absmin(x1, x2):
 
 # time conversion
 def frame2sec(frame: int): return frame / FPS
-def sec2frame(sec: float): return int(FPS * sec)
+def sec2frame(sec: float): return int(round(FPS * sec))
 
 # IO related
 # ------------------------
@@ -146,12 +146,3 @@ class Tee(object):
     def close(self):
         sys.stdout = self.stdout
         self.file.close()
-
-
-# DEPRECATED
-# ------------------------
-# def path2file(path : str):
-#     """Convert a full [path] to file name only"""
-#     return path.split('/')[-1]
-# ->
-# use os.path.basename(path) instead

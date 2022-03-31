@@ -9,6 +9,7 @@ from touchscreen_toolbox.utils import *
 # standardize related
 # ----------------------------------------------
 def replace_w_median(df: pd.DataFrame, col: str):
+    """Replace the values in a <df> column with its median value"""
     df[col + '_x'] = df[col + '_x'].median()
     df[col + '_y'] = df[col + '_y'].median()
 
@@ -136,20 +137,10 @@ def statistics(data: pd.DataFrame):
     return value
 
 
-def record(data : pd.DataFrame, folder_path, video_name, proc_ls):
+def record(data: pd.DataFrame, folder_path: str, video_name: str, proc_ls: list):
     """Record statistics into csv"""
     stats_path = os.path.join(folder_path, RST_FOLDER, STATS_NAME)
     if os.path.exists(stats_path):
         stats = pd.read_csv(stats_path)
         stats.loc[len(stats)] = ([video_name] + [str(proc_ls)] + statistics(data))
         stats.to_csv(stats_path, index=False)
-
-
-# DEPRECATED FUNCTIONS
-
-# def rotate(df, col):
-#     """linear rotation in R2"""
-#     for xcol, ycol in zip(x_cols, y_cols):
-#         X, Y = (df[xcol], df[ycol])
-#         df[xcol] = cos*X - sin*Y
-#         df[ycol] = sin*X + cos*Y
