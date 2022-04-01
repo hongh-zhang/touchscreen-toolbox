@@ -195,7 +195,6 @@ def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x:
     
         # crop timeline
         if time_file:
-            max_time = 
             start, end = hardcode.get_time(time_file, mouse_id, date, hi_bound=len(data))
             data = data[start:end]
 
