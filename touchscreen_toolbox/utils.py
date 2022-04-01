@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import shutil
 import numpy as np
@@ -54,9 +55,10 @@ YCOLS = [i for i in HEADERS if '_y' in i]
 CCOLS = [i for i in HEADERS if '_cfd' in i]
 
 # template for statistics.csv
-HEAD1 = ['video', 'pre', 'frame'] + [i[:-4] for i in CCOLS for j in '12345']
-HEAD2 = ['-', '-', '-'] + [j for i in CCOLS for j in ('#of0', '%of0', 'cons', '1stQ', '10thQ')]
+HEAD1 = ['video', 'id', 'chamber', 'date', 'time', 'pre', 'frame'] + [i[:-4] for i in CCOLS for j in '12345']
+HEAD2 = ['-' for i in range(7)] + [j for i in CCOLS for j in ('#of0', '%of0', 'cons', '1stQ', '10thQ')]
 STATS_TEMPL = pd.DataFrame(np.vstack((HEAD1, HEAD2)))
+
 
 def create_stats(path: str):
     """Create empty statistics.csv at the given <path>"""

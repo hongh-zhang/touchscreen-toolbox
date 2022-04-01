@@ -58,11 +58,13 @@ def map_video(
         function to be mapped to each frame
 
     """
-
+    
+    # initialize opencv
     cap = cv2.VideoCapture(video_in)
     fourcc = cv2.VideoWriter_fourcc(*fourcc)
     writer = cv2.VideoWriter(video_out, fourcc, fps, dim)
-
+    
+    # iterate each frame and apply function
     while(cap.isOpened()):
         ret, frame = cap.read()
 

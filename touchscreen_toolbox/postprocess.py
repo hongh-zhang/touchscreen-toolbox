@@ -16,8 +16,8 @@ def replace_w_median(df: pd.DataFrame, col: str):
 
 def set_origin(df: pd.DataFrame, col: str):
     """Set the [col] as origin for all coordiantes"""
-    x_adjustment = df[col + '_x'][0]
-    y_adjustment = df[col + '_y'][0]
+    x_adjustment = df[col + '_x'].iloc[0]
+    y_adjustment = df[col + '_y'].iloc[0]
 
     for col in XCOLS:
         df[col] -= x_adjustment
@@ -102,8 +102,8 @@ def standardize(data: pd.DataFrame):
     set_origin(data, 'll_corner')
 
     # prepare linear transformation
-    adj = data['lr_corner_x'][0]
-    opp = - data['lr_corner_y'][0]
+    adj = data['lr_corner_x'].iloc[0]
+    opp = - data['lr_corner_y'].iloc[0]
     hyp = dist1((adj, opp))
     transformer = L_transformer(cos=(adj / hyp), sin=(opp / hyp),
                                 scale=(TRAY_LENGTH / hyp))
@@ -137,10 +137,11 @@ def statistics(data: pd.DataFrame):
     return value
 
 
-def record(data: pd.DataFrame, folder_path: str, video_name: str, proc_ls: list):
+def record(data: pd.DataFrame, folder_path: str, video_name: str, 
+           mouse_id: str, chamber: str, date: str, time: str, proc_ls: list):
     """Record statistics into csv"""
     stats_path = os.path.join(folder_path, RST_FOLDER, STATS_NAME)
     if os.path.exists(stats_path):
         stats = pd.read_csv(stats_path)
-        stats.loc[len(stats)] = ([video_name] + [str(proc_ls)] + statistics(data))
+        stats.loc[len(stats)] = ([video_name, mouse_id, chamber, date, time] + [str(proc_ls)] + statistics(data))
         stats.to_csv(stats_path, index=False)

@@ -14,13 +14,13 @@ def distance(data: pd.DataFrame, pt1: str, pt2: str):
 
 def velocity1(data: pd.DataFrame, col: str):
     """1D Velocity of scalar values (from distance)"""
-    return np.diff(data[col], prepend=data[col][0])
+    return np.diff(data[col], prepend=data[col].iloc[0])
 
 
 def velocity2(data: pd.DataFrame, col: str):
     """2D Velocity of vector values (from coordinates)"""
-    dx = np.diff(data[col+'_x'], prepend=data[col+'_x'][0])
-    dy = np.diff(data[col+'_x'], prepend=data[col+'_x'][0])
+    dx = np.diff(data[col+'_x'], prepend=data[col+'_x'].iloc[0])
+    dy = np.diff(data[col+'_x'], prepend=data[col+'_x'].iloc[0])
     return np.sqrt(dx**2+dy**2)
 
 
@@ -48,8 +48,8 @@ def engineering(data : pd.DataFrame):
     # angular velocity
     # angle2 ~ [pi, 3pi], to keep delta-angle continuous at angle=0/2pi
     angle2 = (angle<pi).astype(int) * 2*pi + angle
-    data['v-angle'] = utils.absmin(np.diff(angle, prepend=angle[0]), 
-                                   np.diff(angle2, prepend=angle2[0]))
+    data['v-angle'] = utils.absmin(np.diff(angle, prepend=angle.iloc[0]), 
+                                   np.diff(angle2, prepend=angle2.iloc[0]))
     
     # snout to key points
     d_cols = []
