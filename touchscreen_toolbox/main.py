@@ -137,7 +137,7 @@ def analyze_video(video_path: str, time_file: str = None):
     
     # crop timeline
     if time_file:
-        start, end = hardcode.get_time(time_file, mouse_id, date)
+        start, end = hardcode.get_time(time_file, mouse_id, date, hi_bound=len(data))
         data = data[start:end]
     
     # add second (of video) to data and reorder
@@ -195,7 +195,8 @@ def generate_results(folder_path: str, time_file: str = None):
     
         # crop timeline
         if time_file:
-            start, end = hardcode.get_time(time_file, mouse_id, date)
+            max_time = 
+            start, end = hardcode.get_time(time_file, mouse_id, date, hi_bound=len(data))
             data = data[start:end]
 
         # add second (of video) to data and reorder
