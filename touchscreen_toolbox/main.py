@@ -170,7 +170,7 @@ def cleanup(folder_path: str, files: list):
         utils.move_files(files, folder_path, dlc_folder)
 
 
-def generate_results(folder_path: str, time_file: str = None):
+def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x: int(re.match('\d+', x)[0])):
     """(re-)Generate results from a analyzed folder"""
     
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
@@ -181,7 +181,7 @@ def generate_results(folder_path: str, time_file: str = None):
     utils.mk_dir(rst_folder)
     utils.create_stats(stats_path)
     
-    videos = utils.find_files(folder_path, '.mp4')
+    videos = sorted(utils.find_files(folder_path, '.mp4'), key=sort_key)
     for video in videos:
         # locate csv
         try:
