@@ -7,7 +7,6 @@ import pandas as pd
 
 from touchscreen_toolbox import utils
 from touchscreen_toolbox import feature
-from touchscreen_toolbox import hardcode
 import touchscreen_toolbox.preprocess as pre
 import touchscreen_toolbox.postprocess as post
 from touchscreen_toolbox.dlc import dlc_analyze
@@ -133,11 +132,11 @@ def analyze_video(video_path: str, time_file: str = None):
     
     # postprocess
     print(f"Postprocessing...")
-    mouse_id, chamber, date, time, _ = hardcode.decode_name(video_name)
+    mouse_id, chamber, date, time, _ = utils.decode_name(video_name)
     
     # crop timeline
     if time_file:
-        start, end = hardcode.get_time(time_file, mouse_id, date, hi_bound=len(data))
+        start, end = utils.get_time(time_file, mouse_id, date, hi_bound=len(data))
         data = data[start:end]
     
     # add second (of video) to data and reorder
@@ -176,7 +175,10 @@ def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x:
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
     rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
     stats_path = os.path.join(rst_folder, utils.STATS_NAME)
-    old_stats = pd.read_csv(stats_path, skiprows=[0]).set_index('video')
+    try:
+        old_stats = pd.read_csv(stats_path, skiprows=[0]).set_index('video')
+    except:
+        old_stats = None
     csvs = utils.find_files(dlc_folder, '.csv')
     utils.mk_dir(rst_folder)
     utils.create_stats(stats_path)
@@ -191,19 +193,24 @@ def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x:
             raise Exception(f"File for {video} not found")
 
         # postprocess
-        mouse_id, chamber, date, time, _ = hardcode.decode_name(video)
+        mouse_id, chamber, date, time, _ = utils.decode_name(video)
     
         # crop timeline
         if time_file:
-            start, end = hardcode.get_time(time_file, mouse_id, date, hi_bound=len(data))
+            start, end = utils.get_time(time_file, mouse_id, date, hi_bound=len(data))
             data = data[start:end]
 
         # add second (of video) to data and reorder
         col_order = ['sec']+data.columns.tolist()
         data['sec'] = data.index / 25
         data = data[col_order]
-
-        post.record(data, folder_path, video, mouse_id, chamber, date, time, old_stats.loc[video, 'pre'])
+        
+        # ignore preprocess info if stats doesn't exists
+        if old_stats is not None:
+            post.record(data, folder_path, video, mouse_id, chamber, date, time, old_stats.loc[video, 'pre'])
+        else:
+            post.record(data, folder_path, video, mouse_id, chamber, date, time, [])
+            
         data = post.standardize(data)
 
         # feature engineering
