@@ -148,3 +148,22 @@ class Tee(object):
     def close(self):
         sys.stdout = self.stdout
         self.file.close()
+
+
+# some hardcoded postprocessing
+PATTERN = '^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)'
+DEFAULT = ['-' for i in range(5)]
+def decode_name(name, pattern=PATTERN):
+    try:
+        return [''.join(i.split('-')) for i in re.match(pattern, name).groups()]
+    except AttributeError:
+        print("Pattern unmatched")
+        return DEFAULT
+    
+    
+def get_time(time_file, mouse_id, date, pre_buffer=10, post_buffer=20, hi_bound=999999):
+    col = pd.read_csv(time_file).set_index(['id', 'date']).loc[(int(mouse_id), int(date))]
+    start, end = map(sec2frame, (col['vid_start'], col['vid_end']))
+    start = max(0,  start - FPS * pre_buffer)
+    end   = min(hi_bound, end + FPS * post_buffer)
+    return start, end
