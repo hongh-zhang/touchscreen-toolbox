@@ -3,5 +3,5 @@ from touchscreen_toolbox import dlc
 from touchscreen_toolbox import preprocess
 from touchscreen_toolbox import postprocess
 from touchscreen_toolbox.main import (
-    analyze_video, analyze_folder, analyze_folders, generate_results)
+    analyze_video, analyze_folder, analyze_folders, generate_results, merge_timestamps)
 from touchscreen_toolbox import feature

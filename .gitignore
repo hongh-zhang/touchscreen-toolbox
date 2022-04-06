@@ -2,7 +2,7 @@
 tests/
 
 # log files
-log.txt
+*.txt
 logs.log
 
 # DLC files

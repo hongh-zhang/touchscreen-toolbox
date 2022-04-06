@@ -86,7 +86,7 @@ def absmin(x1, x2):
 
 # time conversion
 def frame2sec(frame: int): return frame / FPS
-def sec2frame(sec: float): return int(round(FPS * sec))
+def sec2frame(sec: float): return np.round(FPS * sec).astype(int)
 
 # IO related
 # ------------------------
@@ -121,9 +121,10 @@ def find_files(folder_path, extension):
     Find all files under the <folder_path> with the specific <extension>,
     e.g. find_files(/path/to/results, ".csv")
     """
-    return [f for f in os.listdir(folder_path) if f.endswith(extension)]
+    return list(filter(lambda x: x.endswith(extension), os.listdir(folder_path)))
 
 # logger
+# ------------------------
 # modified from
 # https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
 class Tee(object):
@@ -150,18 +151,21 @@ class Tee(object):
         self.file.close()
 
 
-# some hardcoded postprocessing
+# hardcoded postprocessing
+# ------------------------
 PATTERN = '^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)'
+ELEMENTS = ['mouse_id', 'chamber', 'date', 'time', 'suffix']
 DEFAULT = ['-' for i in range(5)]
 def decode_name(name, pattern=PATTERN):
     try:
-        return [''.join(i.split('-')) for i in re.match(pattern, name).groups()]
+        matched = [''.join(i.split('-')) for i in re.match(pattern, name).groups()]
+        return True, {i:j for i,j in zip(ELEMENTS, matched)}
     except AttributeError:
         print("Pattern unmatched")
-        return DEFAULT
+        return False, {}
     
     
-def get_time(time_file, mouse_id, date, pre_buffer=10, post_buffer=20, hi_bound=999999):
+def get_time(time_file, mouse_id, date, pre_buffer=1, post_buffer=2, hi_bound=999999):
     col = pd.read_csv(time_file).set_index(['id', 'date']).loc[(int(mouse_id), int(date))]
     start, end = map(sec2frame, (col['vid_start'], col['vid_end']))
     start = max(0,  start - FPS * pre_buffer)

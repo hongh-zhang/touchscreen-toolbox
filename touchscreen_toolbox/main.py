@@ -140,8 +140,8 @@ def analyze_video(video_path: str, time_file: str = None):
         data = data[start:end]
     
     # add second (of video) to data and reorder
-    col_order = ['sec']+data.columns.tolist()
-    data['sec'] = data.index / 25
+    col_order = ['time']+data.columns.tolist()
+    data['time'] = data.index / 25
     data = data[col_order]
     
     post.record(data, folder_path, video_name, mouse_id, chamber, date, time, proc_ls)
@@ -170,7 +170,7 @@ def cleanup(folder_path: str, files: list):
 
 
 def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x: int(re.match('\d+', x)[0])):
-    """(re-)Generate results from a analyzed folder"""
+    """(re-)Generate results from an analyzed folder"""
     
     dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
     rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
@@ -193,23 +193,29 @@ def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x:
             raise Exception(f"File for {video} not found")
 
         # postprocess
-        mouse_id, chamber, date, time, _ = utils.decode_name(video)
-    
+        
+        success, vid_info = utils.decode_name(video)
+        
+        if not success:
+            print("Skipping")
+            continue
+        
         # crop timeline
         if time_file:
-            start, end = utils.get_time(time_file, mouse_id, date, hi_bound=len(data))
+            start, end = utils.get_time(time_file, vid_info['mouse_id'], vid_info['date'], hi_bound=len(data))
             data = data[start:end]
 
         # add second (of video) to data and reorder
-        col_order = ['sec']+data.columns.tolist()
-        data['sec'] = data.index / 25
+        col_order = ['time']+data.columns.tolist()
+        data['time'] = data.index / 25
         data = data[col_order]
         
+        # write in video info
         # ignore preprocess info if stats doesn't exists
-        if old_stats is not None:
-            post.record(data, folder_path, video, mouse_id, chamber, date, time, old_stats.loc[video, 'pre'])
-        else:
-            post.record(data, folder_path, video, mouse_id, chamber, date, time, [])
+        try:
+            post.record(data, folder_path, video, vid_info['mouse_id'], vid_info['chamber'], vid_info['date'], vid_info['time'], old_stats.loc[video, 'pre'])
+        except:
+            post.record(data, folder_path, video, vid_info['mouse_id'], vid_info['chamber'], vid_info['date'], vid_info['time'], [])
             
         data = post.standardize(data)
 
@@ -218,3 +224,39 @@ def generate_results(folder_path: str, time_file: str = None, sort_key=lambda x:
         
         # save
         data.to_csv(os.path.join(rst_folder, video[:-4]+'.csv'))
+        
+
+        
+def merge_timestamp(data: pd.DataFrame, timestamp: pd.DataFrame):
+    timestamp = timestamp.convert_dtypes()
+    
+    # align starting time
+    timestamp['time'] += data.time.iloc[0]
+    
+    timestamp['frame'] = utils.sec2frame(timestamp['time'])
+    increment_dup(timestamp, 'frame')
+    
+    merged = data.merge(timestamp.drop('time', axis=1), how='left', on='frame')
+    merged['state_'] = merged['state'].fillna(method='ffill')#.fillna(method='bfill')
+    
+    return merged
+
+
+def merge_timestamps(rst_folder, timestamp_file):
+    
+    with h5py.File(timestamp_file, 'r') as timestamps:
+        
+        for csv_file in utils.find_files(rst_folder, 'csv'):
+            
+            print(f"Merging {csv_file}...")
+            
+            csv_path = os.path.join(rst_folder, csv_file)
+            
+            success, vid_info = utils.decode_name(csv_file)
+            
+            if success:
+                timestamp = pd.DataFrame(timestamps[vid_info['mouse_id']+'/'+vid_info['date']], 
+                                         columns=['state','time']).convert_dtypes()
+                data = pd.read_csv(csv_path)
+                data = merge_timestamp(data, timestamp)
+                merged.to_csv(csv_path, index=False)
