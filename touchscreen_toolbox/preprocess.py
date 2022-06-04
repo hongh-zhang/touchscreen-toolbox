@@ -114,9 +114,21 @@ def exposure_table(gamma: float):
     return gamma_table
 
 
-def increase_exposure(video_in: str, video_out: str, value: float = 0.5):
+def increase_exposure(video_in: str, video_out: str, gamma: float = 0.5):
     """Increase exposure of the given [video]"""
-    lut_table = exposure_table(value)
+    lut_table = exposure_table(gamma)
     map_video(lambda x: lut(x, lut_table), video_in, video_out)
+    
+#     # moviepy 
+#     # somehow this is slower
+#     clip = VideoFileClip(video_in)
+#     clip2 = clip.fx(vfx.gamma_corr, gamma=gamma)
+#     clip2.write_videofile(video_out)
+#     clip.close()
+#     clip2.close()
 
 # ---------------------------------------------------------
+
+# from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+# def clip(...):
+#     ffmpeg_extract_subclip("full.mp4", start_seconds, end_seconds, targetname="cut.mp4")

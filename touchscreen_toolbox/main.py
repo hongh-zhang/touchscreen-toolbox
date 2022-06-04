@@ -132,11 +132,11 @@ def analyze_video(video_path: str, time_file: str = None):
     
     # postprocess
     print(f"Postprocessing...")
-    mouse_id, chamber, date, time, _ = utils.decode_name(video_name)
-    
+    success, vid_info = utils.decode_name(video_name)
+
     # crop timeline
-    if time_file:
-        start, end = utils.get_time(time_file, mouse_id, date, hi_bound=len(data))
+    if success and time_file:
+        start, end = utils.get_time(time_file, vid_info['mouse_id'], vid_info['date'], hi_bound=len(data))
         data = data[start:end]
     
     # add second (of video) to data and reorder
@@ -144,7 +144,7 @@ def analyze_video(video_path: str, time_file: str = None):
     data['time'] = data.index / 25
     data = data[col_order]
     
-    post.record(data, folder_path, video_name, mouse_id, chamber, date, time, proc_ls)
+    post.record(data, folder_path, video_name, vid_info['mouse_id'], vid_info['chamber'], vid_info['date'], vid_info['time'], proc_ls)
     data = post.standardize(data)
     
     # feature engineering
