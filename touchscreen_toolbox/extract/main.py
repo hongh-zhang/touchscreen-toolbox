@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 
 from touchscreen_toolbox import utils
-from touchscreen_toolbox import feature
-import touchscreen_toolbox.preprocess as pre
-import touchscreen_toolbox.postprocess as post
-from touchscreen_toolbox.dlc import dlc_analyze
+import touchscreen_toolbox.config as cfg
+from touchscreen_toolbox.extract import feature
+import touchscreen_toolbox.extract.preprocess as pre
+import touchscreen_toolbox.extract.postprocess as post
+from touchscreen_toolbox.extract.dlc import dlc_analyze
 
 
 def analyze_folders(root: str, time_file: str = None, sort_key=lambda x: int(re.match('\d+', x)[0])):
@@ -25,9 +26,10 @@ def analyze_folders(root: str, time_file: str = None, sort_key=lambda x: int(re.
         file name sorting order to be passed to sort() function
         
     """
-    tee = utils.Tee('log.txt')  # log stdout
+    # tee = utils.Tee('log.txt')  # log stdout
     for (folder_path, _, files) in list(os.walk(root)):
-        analyze_folder(folder_path, time_file=time_file, sort_key=sort_key)
+        if not utils.is_generated(folder_path):
+            analyze_folder(folder_path, time_file=time_file, sort_key=sort_key)
 
 
 def analyze_folder(folder_path: str, time_file: str = None, sort_key=lambda x: x):
@@ -79,9 +81,9 @@ def initialize(folder_path: str, sort_key=lambda x: x):
         return []
     
     # generate relevant folder path
-    dlc_folder = os.path.join(folder_path, utils.DLC_FOLDER)
-    rst_folder = os.path.join(folder_path, utils.RST_FOLDER)
-    stats_path = os.path.join(rst_folder, utils.STATS_NAME)
+    dlc_folder = os.path.join(folder_path, cfg.DLC_FOLDER)
+    rst_folder = os.path.join(folder_path, cfg.RST_FOLDER)
+    stats_path = os.path.join(rst_folder, cfg.STATS_NAME)
 
     # no previous progress
     if not os.path.exists(stats_path):
@@ -126,7 +128,7 @@ def analyze_video(video_path: str, time_file: str = None):
 
     # estimate
     print(f"Calling DeepLabCut...")
-    csv = dlc_analyze(utils.DLC_CONFIG, new_video_path)
+    csv = dlc_analyze(cfg.DLC_CONFIG, new_video_path)
     csv = os.path.join(folder_path, csv)
     data = utils.read_dlc_csv(csv)
     

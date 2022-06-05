@@ -3,7 +3,8 @@
 import os
 import sys
 import deeplabcut as dlc
-from touchscreen_toolbox.utils import *
+import touchscreen_toolbox.utils as utils
+import touchscreen_toolbox.config as cfg
 
 
 def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
@@ -13,10 +14,10 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
     folder_path = os.path.dirname(video_path)
     
     if verbosity:
-        dlc.analyze_videos(DLC_CONFIG, video_path,
+        dlc.analyze_videos(cfg.DLC_CONFIG, video_path,
                            videotype='mp4', batchsize=32)
         dlc.filterpredictions(
-            DLC_CONFIG,
+            cfg.DLC_CONFIG,
             video_path,
             videotype='mp4',
             filtertype='median')
@@ -44,7 +45,7 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
             raise err
         sys.stdout = save_stdout
 
-    csv = [f for f in find_files(folder_path, '.csv') if f.startswith(video_name[:-4])][0]
+    csv = [f for f in utils.find_files(folder_path, '.csv') if f.startswith(video_name[:-4])][0]
     
     return csv
 
