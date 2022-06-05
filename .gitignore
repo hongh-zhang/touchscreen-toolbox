@@ -1,3 +1,5 @@
+*.ipynb
+
 # test folder
 tests/
 
@@ -13,6 +15,7 @@ logs.log
 # *.data-00000-of-00001
 # *.index
 # *.meta
+# touchscreen_toolbox/extract/DLC
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
