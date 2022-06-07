@@ -2,9 +2,11 @@
 
 import os
 import sys
+import pandas as pd
 import deeplabcut as dlc
 import touchscreen_toolbox.utils as utils
 import touchscreen_toolbox.config as cfg
+
 
 
 def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
@@ -66,6 +68,11 @@ def label_video(video_path):
     
     # move back files
     move_files(files, folder_path, dlc_folder)
+
+
+def read_dlc_csv(path: str):
+    return pd.read_csv(path, skiprows=[0, 1, 2, 3], names=(['frame'] + cfg.HEADERS)).set_index('frame')
+
 
 
 # functions to suppress output

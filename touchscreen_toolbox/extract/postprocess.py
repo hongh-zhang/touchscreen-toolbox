@@ -6,6 +6,28 @@ from itertools import groupby
 from touchscreen_toolbox.utils import *
 
 
+# prediction refinement
+# ----------------------------------------------
+def cutoff(df: pd.DataFrame, p_cutoff: float=0.1):
+    """Drop low confidence prediction"""
+    
+    # iterate columns in group of three
+    for i in range(0, df.shape[1], 3):
+
+        # get index
+        idx = df.index[df.iloc[:, i+2] < p_cutoff]
+
+        # set to NaN
+        df.iloc[idx, i] = pd.NA
+        df.iloc[idx, i+1] = pd.NA
+
+
+def median_filter(df: pd.DataFrame, window_len: int=5):
+    """Apply sliding median filter to all columns in <df>"""
+    for i in range(df.shape[1]):
+        df.iloc[:,i] = df.iloc[:,i].rolling(window_len, min_periods=1, center=True).median()
+
+
 # standardize related
 # ----------------------------------------------
 def replace_w_median(df: pd.DataFrame, col: str):
