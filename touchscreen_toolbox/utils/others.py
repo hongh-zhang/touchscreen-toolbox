@@ -42,9 +42,19 @@ def decode_name(name, pattern=PATTERN):
         return False, {}
     
     
-def get_time(time_file, mouse_id, date, pre_buffer=1, post_buffer=2, hi_bound=999999):
-    col = pd.read_csv(time_file).set_index(['id', 'date']).loc[(int(mouse_id), int(date))]
-    start, end = map(sec2frame, (col['vid_start'], col['vid_end']))
+def get_time(time_file, vid_info, pre_buffer=1, post_buffer=2, hi_bound=999999):
+    
+    times = pd.read_csv(time_file).set_index(['id', 'date'])
+    video_time = times.loc[(int(vid_info['mouse_id']), int(vid_info['date']))]
+    
+    start, end = map(sec2frame, (video_time['vid_start'], video_time['vid_end']))
     start = max(0,  start - cfg.FPS * pre_buffer)
     end   = min(hi_bound, end + cfg.FPS * post_buffer)
+    
     return start, end
+
+
+# duration
+# from moviepy.editor import VideoFileClip
+# clip = VideoFileClip("my_video.mp4")
+# print( clip.duration )
