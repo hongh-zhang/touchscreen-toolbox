@@ -15,7 +15,7 @@ logs.log
 # *.data-00000-of-00001
 # *.index
 # *.meta
-# touchscreen_toolbox/extract/DLC
+# touchscreen_toolbox/DLC
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
