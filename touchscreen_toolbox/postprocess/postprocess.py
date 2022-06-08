@@ -24,7 +24,11 @@ def cutoff(df: pd.DataFrame, p_cutoff: float=0.1):
 
 def median_filter(df: pd.DataFrame, window_len: int=5):
     """Apply sliding median filter to all columns in <df>"""
+    
+    # iterate every column
     for i in range(df.shape[1]):
+        
+        # apply filter
         df.iloc[:,i] = df.iloc[:,i].rolling(window_len, min_periods=1, center=True).median()
 
 
