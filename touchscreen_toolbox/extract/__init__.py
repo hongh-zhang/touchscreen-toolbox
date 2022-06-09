@@ -1,2 +1,2 @@
-from touchscreen_toolbox.extract import dlc
-from touchscreen_toolbox.extract import preprocess
+from .dlc import *
+from .preprocess import *

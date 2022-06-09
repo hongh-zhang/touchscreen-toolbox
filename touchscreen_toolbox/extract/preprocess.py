@@ -6,7 +6,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 B_THRESHOLD = 40  # threshold for increasing brightness
 
 
-def preprocess(video_in: str):
+def preprocess_video(video_in: str):
     """
     Check video quality and apply preprocess if required,
 

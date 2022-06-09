@@ -9,7 +9,7 @@ import touchscreen_toolbox.config as cfg
 
 
 
-def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
+def dlc_analyze(video_path: str, verbosity: bool = False):
     """Call DLC to analyze video"""
     
     video_name = os.path.basename(video_path)
@@ -18,11 +18,6 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
     if verbosity:
         dlc.analyze_videos(cfg.DLC_CONFIG, video_path,
                            videotype='mp4', batchsize=32)
-        dlc.filterpredictions(
-            cfg.DLC_CONFIG,
-            video_path,
-            videotype='mp4',
-            filtertype='median')
 
     # shut tf & dlc up
     else:
@@ -33,13 +28,8 @@ def dlc_analyze(path_cfg: str, video_path: str, verbosity: bool = False):
         save_stdout = sys.stdout
         sys.stdout = DummyFile()
         try:
-            dlc.analyze_videos(path_cfg, video_path,
+            dlc.analyze_videos(cfg.DLC_CONFIG, video_path,
                                videotype='mp4', batchsize=32)
-            dlc.filterpredictions(
-                path_cfg,
-                video_path,
-                videotype='mp4',
-                filtertype='median')
 
         # reset stdout before throwing error
         except Exception as err:

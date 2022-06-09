@@ -10,26 +10,26 @@ import touchscreen_toolbox.config as cfg
 
 # prediction refinement
 # ----------------------------------------------
-def cutoff(df: pd.DataFrame, p_cutoff: float=0.1):
+def cutoff(data: pd.DataFrame, p_cutoff: float=cfg.P_CUTOFF):
     """Drop low confidence prediction"""
     
     # iterate columns in group of three (x, y, confidence) for each body part
-    for i in range(0, df.shape[1], 3):
+    for i in range(0, data.shape[1], 3):
 
         # get index of low confidence
-        idx = df.index[df.iloc[:, i+2] < p_cutoff]
+        idx = data.index[data.iloc[:, i+2] < p_cutoff]
 
         # set coordinates to NaN
-        df.iloc[idx, i] = pd.NA
-        df.iloc[idx, i+1] = pd.NA
+        data.iloc[idx, i] = pd.NA
+        data.iloc[idx, i+1] = pd.NA
 
 
-def median_filter(df: pd.DataFrame, window_len: int=5):
+def median_filter(data: pd.DataFrame, window_len: int=5):
     """Apply sliding median filter to all columns in <df>"""
     
     # apply filter to each column
-    for i in range(df.shape[1]):    
-        df.iloc[:,i] = df.iloc[:,i].rolling(window_len, min_periods=1, center=True).median()
+    for i in range(data.shape[1]):    
+        data.iloc[:,i] = data.iloc[:,i].rolling(window_len, min_periods=1, center=True).median()
 
 
 
@@ -42,7 +42,7 @@ def create_stats(path: str):
     STATS_TEMPL.to_csv(path, index=False)
 
 
-def statistics(data: pd.DataFrame):
+def statistics(data: pd.DataFrame, p_cutoff: float=cfg.P_CUTOFF):
     """Produce statistics about miss predicted values"""
     frames = len(data)
     value = [frames]

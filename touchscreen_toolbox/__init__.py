@@ -1,3 +1,4 @@
-from touchscreen_toolbox.extract import *
-import touchscreen_toolbox.utils as utils
-from touchscreen_toolbox.postprocess import *
+from . import utils
+from . import extract
+from . import postprocess
+from .core import *

@@ -36,7 +36,6 @@ def decode_name(video_name: str):
         matched = [''.join(i.split('-')) for i in re.match(PATTERN, video_name).groups()]
         sucess = True
         vid_info = {i:j for i,j in zip(ELEMENTS, matched)}
-        vid_info['video_name'] = video_name
     
     except AttributeError:
         print(f"Pattern unmatched: {video_name}")
@@ -47,8 +46,13 @@ def decode_name(video_name: str):
 def get_vid_info(video_path):
     """Get dictionary of video information from <video_path>"""
     
+    vid_info = {'path': video_path, 
+                'dir' : os.path.dirname(video_path),
+                'name': os.path.basename(video_path)}
+    
     # deconstruct information in video name
-    success, vid_info = decode_name(os.path.basename(video_path))
+    success, name_info = decode_name(vid_info['name'])
+    vid_info.update(name_info)
     
     # count video length
     vid_info['length'] = get_vid_len(video_path)

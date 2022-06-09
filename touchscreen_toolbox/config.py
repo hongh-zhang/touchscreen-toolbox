@@ -4,6 +4,7 @@
 # magic numbers
 FPS = 25
 TRAY_LENGTH = 26.8  # (cm)
+P_CUTOFF = 0.1 # confidence threshold
 
 # keypoints
 MICE = ('snout',
