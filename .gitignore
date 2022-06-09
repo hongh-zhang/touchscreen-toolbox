@@ -1,4 +1,5 @@
 *.ipynb
+*.csv
 
 # test folder
 tests/
@@ -6,6 +7,7 @@ tests/
 # log files
 *.txt
 logs.log
+logs.txt
 
 # DLC files
 *.pickle

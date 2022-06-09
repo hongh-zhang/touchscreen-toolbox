@@ -32,4 +32,12 @@ STATS_NAME = 'statistics.csv'
 
 # auto generated variables
 # ------
+# for quick access of columns
 HEADERS = [j for i in (MICE + REFE) for j in (i + '_x', i + '_y', i + '_cfd')]
+XCOLS = [i for i in HEADERS if '_x' in i]
+YCOLS = [i for i in HEADERS if '_y' in i]
+CCOLS = [i for i in HEADERS if '_cfd' in i]
+
+# template for statistics.csv
+HEAD1 = ['video', 'id', 'chamber', 'date', 'time', 'pre', 'frame'] + [i[:-4] for i in CCOLS for j in '12345']
+HEAD2 = ['-' for i in range(7)] + [j for i in CCOLS for j in ('#of0', '%of0', 'cons', '1stQ', '10thQ')]
