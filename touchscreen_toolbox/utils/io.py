@@ -104,3 +104,7 @@ class Tee(object):
     def close(self):
         sys.stdout = self.stdout
         self.file.close()
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)

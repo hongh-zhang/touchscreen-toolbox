@@ -5,8 +5,8 @@ from . import postprocess
 
 def analyze_video(video_path, post=False):
     
-    # get video info
-    vid_info = utils.get_vid_info(video_path)
+    # initialize result folders + get video info
+    vid_info = utils.initialize(video_path)
     
     # pose estimate
     extract.preprocess_video(vid_info) # target_path->vid_info

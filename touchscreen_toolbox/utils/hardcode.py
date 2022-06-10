@@ -12,7 +12,7 @@ import touchscreen_toolbox.config as cfg
 # vid_info related
 # ------------------------
 PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)(\.\S+)"
-ELEMENTS = ['mouse_id', 'chamber', 'date', 'time', 'suffix', 'format']
+ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix', 'format']
 
 
 def decode_name(video_name: str):
@@ -47,6 +47,7 @@ def get_vid_info(video_path):
     """Get dictionary of video information from <video_path>"""
     
     vid_info = {'path': video_path, 
+                'target_path': video_path, 
                 'dir' : os.path.dirname(video_path),
                 'name': os.path.basename(video_path)}
     
@@ -84,9 +85,9 @@ def get_time(vid_info: dict, time_file: str):
     """
     
     times = pd.read_csv(time_file).set_index(['id', 'date'])
-    video_time = times.loc[(int(vid_info['mouse_id']), int(vid_info['date']))]
+    video_time = times.loc[(int(vid_info['mouse_id']), int(vid_info['exp_date']))]
     
     start = video_time['vid_start']
     end   = video_time['vid_end']
     
-    return start, end
+    vid_info['time'] = (start, end)

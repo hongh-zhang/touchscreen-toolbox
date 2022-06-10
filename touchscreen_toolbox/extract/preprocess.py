@@ -1,12 +1,17 @@
 import os
 import cv2
 import numpy as np
+import touchscreen_toolbox.config as cfg
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
-B_THRESHOLD = 40  # threshold for increasing brightness
 
 
-def preprocess_video(video_in: str):
+def add_suffix(vid_info, suffix):
+    """Add suffix (from preprocessing) to target video path"""
+    return vid_info['target_path'][:-len(vid_info['format'])] + suffix + vid_info['format']
+
+
+def preprocess_video(vid_info: dict):
     """
     Check video quality and apply preprocess if required,
 
@@ -17,28 +22,61 @@ def preprocess_video(video_in: str):
         name of the processed video to continue analyzing
 
     """
-    name = video_in
-    proc_ls = []
 
-    # brightness
-    if brightness_check(video_in):
-        print(f"Increasing brightness for '{video_in}'")
-        name = video_in[:-4] + '_bright' + '.mp4'
-        if os.path.exists(name):
-            print(f"Preprocessed video '{name}' exists, removing it")
-            os.remove(name)
-        gamma_correction(video_in, name, gamma=0.5)
-        proc_ls.append('b')
+    vid_info['prep'] = [] # to record preprocess applied
+    
+    cut_video(vid_info)
+    
+    brightness(vid_info)
 
     # TODO: anything else?
 
-    return name, proc_ls
 
-
-def clip_video(video_in: str, start: float, end: float, video_out: str=None):
-    """Clip video"""
-    ffmpeg_extract_subclip(video_in, start, end, targetname=video_out)
+def cut_video(vid_info):
+    """
+    Cut video according to vid_info['time'] entry,
+    *overwrite
+    """
     
+    print(f"Cutting '{vid_info['target_path']}'...")
+    
+    # retrieve time info
+    try:
+        start, end = vid_info['time']
+    
+    except KeyError:
+        tb.utils.eprint(f"Time information not found for {vid_info['path']}")
+        start, end = 0, vid_info['length']
+    
+    # cut & save to <target_path>
+    vid_info['target_path'] = add_suffix(vid_info, '_c')
+    ffmpeg_extract_subclip(vid_info['path'], start, end, targetname=vid_info['target_path'])
+    
+    vid_info['prep'].append('c')
+
+
+def brightness(vid_info):
+    """
+    Bright preprocessing using gamma correction, if video brightness is too low
+    (set brightness threshold in config)
+    *overwrite
+    """
+    
+    target_video = vid_info['target_path']
+    
+    # only apply preprocessing if the average brightness is lower than threshold
+    if brightness_check(target_video):
+        
+        print(f"Increasing brightness for '{target_video}'...")
+        
+        vid_info['target_path'] = add_suffix(vid_info, '_b')
+
+        gamma_correction(target_video, vid_info['target_path'], gamma=0.5)
+        
+        vid_info['prep'].append('b')
+        
+        os.remove(target_video)
+
 
 def map_video(
     func,
@@ -93,7 +131,7 @@ FRAME2READ = 5
 
 # functions for checking brightness
 def brightness_check(video: str):
-    return (np.median(get_brightness(video)) <= B_THRESHOLD)
+    return (np.median(get_brightness(video)) <= cfg.B_THRESHOLD)
 
 
 def get_brightness(video: str):
@@ -121,6 +159,11 @@ def get_gamma_table(gamma: float):
 
 def gamma_correction(video_in: str, video_out: str, gamma: float = 0.5):
     """Increase exposure of the given [video]"""
+    
+    # overwrite
+    if os.path.exists(video_out):
+        os.remove(video_out)
+    
     lut_table = get_gamma_table(gamma)
     map_video(lambda x: lut(x, lut_table), video_in, video_out)
     

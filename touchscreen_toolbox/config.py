@@ -29,6 +29,9 @@ RST_FOLDER = "results"  # name of subfolder to put analyzed results (csv)
 STATS_NAME = 'statistics.csv'
 
 
+# preprocess
+B_THRESHOLD = 40  # threshold for increasing brightness
+
 
 
 # auto generated variables
