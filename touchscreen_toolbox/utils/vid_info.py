@@ -9,39 +9,6 @@ from moviepy.editor import VideoFileClip
 import touchscreen_toolbox.config as cfg
 
 
-# vid_info related
-# ------------------------
-PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)(\.\S+)"
-ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix', 'format']
-
-
-def decode_name(video_name: str):
-    """
-    Extract video information from <video_name> into dictionary
-    
-    Returns
-    -------
-    success: bool
-        whether the operation succeded
-    
-    vid_info: dict
-        dictionary of video information to be accessed by other functions
-    """
-    
-    success  = False
-    vid_info = {}
-    
-    try:
-        # decode & save to vid_info
-        matched = [''.join(i.split('-')) for i in re.match(PATTERN, video_name).groups()]
-        sucess = True
-        vid_info = {i:j for i,j in zip(ELEMENTS, matched)}
-    
-    except AttributeError:
-        print(f"Pattern unmatched: {video_name}")
-    
-    return success, vid_info
-
 
 def get_vid_info(video_path):
     """Get dictionary of video information from <video_path>"""
@@ -59,6 +26,36 @@ def get_vid_info(video_path):
     vid_info['length'] = get_vid_len(video_path)
     
     return vid_info
+
+
+
+def decode_name(video_name: str):
+    """
+    Extract video information from <video_name> into dictionary,
+    pattern matching based on variables in config file
+    
+    Returns
+    -------
+    success: bool
+        whether the operation succeded
+    
+    vid_info: dict
+        dictionary of video information to be accessed by other functions
+    """
+    
+    success  = False
+    vid_info = {}
+    
+    try:
+        # decode & save to vid_info
+        matched = [''.join(i.split('-')) for i in re.match(cfg.PATTERN, video_name).groups()]
+        sucess = True
+        vid_info = {i:j for i,j in zip(cfg.ELEMENTS, matched)}
+    
+    except AttributeError:
+        print(f"Pattern unmatched: {video_name}")
+    
+    return success, vid_info
 
 
 def get_vid_len(video_path):

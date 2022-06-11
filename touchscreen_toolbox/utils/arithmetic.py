@@ -3,7 +3,6 @@ import numpy as np
 import touchscreen_toolbox.config as cfg
 
 
-# distance
 def dist1(point):
     """Euclidean distance from the origin"""
     return np.linalg.norm(point, ord=2)
@@ -14,7 +13,6 @@ def dist2(point1, point2):
     return np.linalg.norm(point2 - point1, ord=2)
 
 
-#
 def absmin(x1, x2):
     """Absolute minimum from 2 1D sequences"""
     a1 = np.abs(x1)

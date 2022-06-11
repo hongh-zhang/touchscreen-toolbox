@@ -29,6 +29,13 @@ RST_FOLDER = "results"  # name of subfolder to put analyzed results (csv)
 STATS_NAME = 'statistics.csv'
 
 
+
+# pattern for decode name in utils/vid_info.py
+PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)(\.\S+)"
+ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix', 'format']
+
+
+
 # preprocess
 B_THRESHOLD = 40  # threshold for increasing brightness
 

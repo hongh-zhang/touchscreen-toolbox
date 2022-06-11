@@ -6,12 +6,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 
 
-def add_suffix(vid_info, suffix):
-    """Add suffix (from preprocessing) to target video path"""
-    return vid_info['target_path'][:-len(vid_info['format'])] + suffix + vid_info['format']
-
-
-def preprocess_video(vid_info: dict):
+def preprocess_video(vid_info: dict, cut=True):
     """
     Check video quality and apply preprocess if required,
 
@@ -25,7 +20,8 @@ def preprocess_video(vid_info: dict):
 
     vid_info['prep'] = [] # to record preprocess applied
     
-    cut_video(vid_info)
+    if cut:
+        cut_video(vid_info)
     
     brightness(vid_info)
 
@@ -166,18 +162,16 @@ def gamma_correction(video_in: str, video_out: str, gamma: float = 0.5):
     
     lut_table = get_gamma_table(gamma)
     map_video(lambda x: lut(x, lut_table), video_in, video_out)
-    
-#     # moviepy 
-#     # somehow this is slower
-#     clip = VideoFileClip(video_in)
-#     clip2 = clip.fx(vfx.gamma_corr, gamma=gamma)
-#     clip2.write_videofile(video_out)
-#     clip.close()
-#     clip2.close()
+
 
 # ---------------------------------------------------------
 
-P_SUFIXX = ['bright.mp4']  # possible preprocessed video suffix
+P_SUFIXX = ['_b.mp4', '_c.mp4']  # possible preprocessed video suffix
 
 def is_preprocess(name):
     return np.any([name.endswith(suffix) for suffix in P_SUFIXX])
+
+
+def add_suffix(vid_info, suffix):
+    """Add suffix (from preprocessing) to target video path"""
+    return vid_info['target_path'][:-len(vid_info['format'])] + suffix + vid_info['format']

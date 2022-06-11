@@ -1,3 +1,3 @@
 from .io import *
-from .hardcode import *
+from .vid_info import *
 from .arithmetic import *
