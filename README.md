@@ -1,4 +1,6 @@
 # touchscreen-toolbox
+Deep-learning-based animal behaviour analysis pipeline. Working in progress...
+#
 
 ## Installation
 
