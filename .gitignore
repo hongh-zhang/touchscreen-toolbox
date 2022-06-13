@@ -14,10 +14,10 @@ logs.txt
 *.h5
 
 # tensorflow checkpoint
-# *.data-00000-of-00001
-# *.index
-# *.meta
-# touchscreen_toolbox/DLC
+*.data-00000-of-00001
+*.index
+*.meta
+touchscreen_toolbox/DLC
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

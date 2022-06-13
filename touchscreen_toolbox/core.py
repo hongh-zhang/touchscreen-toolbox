@@ -4,7 +4,9 @@ from . import postprocess
 
 
 def analyze_video(video_path: str, extract: bool=False, post: bool=False) -> None:
-    """Analyze a video"""
+    """
+    Analyze a video
+    """
     
     # initialize result folders + get video info
     vid_info = initialize(video_path)

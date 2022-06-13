@@ -23,7 +23,7 @@ REFE = ('food_port',
         'r_screen')
 
 # files
-DLC_CONFIG = "touchscreen_toolbox/extract/DLC/config.yaml"  # path of deeplabcut config
+DLC_CONFIG = "touchscreen_toolbox/DLC/config.yaml"  # path of deeplabcut config
 DLC_FOLDER = "DLC"      # name of subfolder to put files from DLC (h5 & pickle)
 RST_FOLDER = "results"  # name of subfolder to put analyzed results (csv)
 STATS_NAME = 'statistics.csv'

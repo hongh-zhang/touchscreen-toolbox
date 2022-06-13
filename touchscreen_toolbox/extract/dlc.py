@@ -9,15 +9,21 @@ import touchscreen_toolbox.config as cfg
 
 
 
-def dlc_analyze(video_path: str, verbosity: bool = False):
+def analyze(vid_info: dict, *args, **kwargs) -> None:
+    
+    dlc_analyze(vid_info, *args, **kwargs)
+    cleanup(vid_info)
+
+
+
+def dlc_analyze(vid_info: dict, verbose: bool=False) -> None:
     """Call DLC to analyze video"""
     
-    video_name = os.path.basename(video_path)
-    folder_path = os.path.dirname(video_path)
+    curr_files = utils.find_files(vid_info['dir'])
     
-    if verbosity:
-        dlc.analyze_videos(cfg.DLC_CONFIG, video_path,
-                           videotype='mp4', batchsize=32)
+    if verbose:
+        dlc.analyze_videos(cfg.DLC_CONFIG, vid_info['target_path'], videotype='.mp4', batchsize=32)
+        dlc.analyze_videos_converth5_to_csv(vid_info['dir'], videotype='.mp4')
 
     # shut tf & dlc up
     else:
@@ -28,18 +34,32 @@ def dlc_analyze(video_path: str, verbosity: bool = False):
         save_stdout = sys.stdout
         sys.stdout = DummyFile()
         try:
-            dlc.analyze_videos(cfg.DLC_CONFIG, video_path,
-                               videotype='mp4', batchsize=32)
+            dlc.analyze_videos(cfg.DLC_CONFIG, vid_info['target_path'], videotype='.mp4', batchsize=32)
+            dlc.analyze_videos_converth5_to_csv(vid_info['dir'], videotype='.mp4')
 
         # reset stdout before throwing error
         except Exception as err:
             sys.stdout = save_stdout
             raise err
         sys.stdout = save_stdout
-
-    csv = [f for f in utils.find_files(folder_path, '.csv') if f.startswith(video_name[:-4])][0]
     
-    return csv
+    new_files = [f for f in utils.find_files(vid_info['dir']) if f not in curr_files]
+    csv = [f for f in new_files if f.endswith('.csv')][0]
+    vid_info['files'] = new_files
+    vid_info['result'] = csv
+    
+
+def cleanup(vid_info: dict) -> None:
+    """Relocate pose estimation files into the DLC folder"""
+    
+    # relocate
+    curr_dir = vid_info['dir']
+    targ_dir = os.path.join(vid_info['dir'], cfg.DLC_FOLDER)
+    utils.move_files(vid_info['files'], curr_dir, targ_dir)
+    
+    # rewrite file path
+    vid_info['files'] = [os.path.join(cfg.DLC_FOLDER, x) for x in vid_info['files']]
+    vid_info['result'] = os.path.join(cfg.DLC_FOLDER, vid_info['result'])
 
 
 def label_video(video_path):
