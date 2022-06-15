@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import shutil
+import pickle
 import pandas as pd
 from time import (localtime, strftime)
 import touchscreen_toolbox.config as cfg
@@ -16,7 +17,7 @@ def is_generated(folder_path):
 def is_valid_folder(folder_path):
     """Check if folder initialized by toolbox"""
     ls = os.listdir(folder_path)
-    return (cfg.DLC_FOLDER in ls) and (cfg.RST_FOLDER in ls)
+    return (cfg.DLC_FOLDER in ls) and (cfg.RST_FOLDER in ls) and (cfg.INF_FOLDER in ls)
 
 
 def mk_dir(path: str, force: bool=True, verbose: bool=True) -> None:
@@ -40,6 +41,8 @@ def move_files(files: list, curr_folder: str, targ_folder: str):
     for f in files:
         file_path = os.path.join(curr_folder, f)
         new_path = os.path.join(targ_folder, f)
+        if os.path.exists(new_path):
+            os.remove(new_path)
         os.rename(file_path, new_path)
 
         
@@ -84,6 +87,7 @@ def initialize_folders(vid_info: dict) -> None:
     if not is_valid_folder(dir_path):
         mk_dir(os.path.join(dir_path, cfg.DLC_FOLDER), force=False)
         mk_dir(os.path.join(dir_path, cfg.RST_FOLDER), force=False)
+        mk_dir(os.path.join(dir_path, cfg.INF_FOLDER), force=False)
 
 
 # logger
@@ -117,3 +121,14 @@ class Tee(object):
 def eprint(*args, **kwargs):
     """Print message to stderr"""
     print(*args, file=sys.stderr, **kwargs)
+    
+    
+    
+def pickle_save(obj, path):
+    with open(path, 'wb') as file:
+        pickle.dump(obj, file)
+
+def pickle_load(path):
+    with open(path, 'rb') as file:
+        obj = pickle.load(file)
+    return obj

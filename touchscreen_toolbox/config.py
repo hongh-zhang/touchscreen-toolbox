@@ -26,13 +26,14 @@ REFE = ('food_port',
 DLC_CONFIG = "touchscreen_toolbox/DLC/config.yaml"  # path of deeplabcut config
 DLC_FOLDER = "DLC"      # name of subfolder to put files from DLC (h5 & pickle)
 RST_FOLDER = "results"  # name of subfolder to put analyzed results (csv)
+INF_FOLDER = "info"
 STATS_NAME = 'statistics.csv'
 
 
 
 # pattern for decode name in utils/vid_info.py
-PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)(\.\S+)"
-ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix', 'format']
+PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)"
+ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix']
 
 
 

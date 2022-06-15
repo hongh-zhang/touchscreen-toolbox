@@ -19,6 +19,10 @@ def analyze(vid_info: dict, *args, **kwargs) -> None:
 def dlc_analyze(vid_info: dict, verbose: bool=False) -> None:
     """Call DLC to analyze video"""
     
+    if 'files' in vid_info and 'result' in vid_info:
+        print("Vid info contain processed files, skipping...")
+        return None
+    
     curr_files = utils.find_files(vid_info['dir'])
     
     if verbose:
@@ -55,6 +59,9 @@ def cleanup(vid_info: dict) -> None:
     # relocate
     curr_dir = vid_info['dir']
     targ_dir = os.path.join(vid_info['dir'], cfg.DLC_FOLDER)
+    
+    if vid_info['path'] != vid_info['target_path']:
+        vid_info['files'].append(os.path.basename(vid_info['target_path']))
     utils.move_files(vid_info['files'], curr_dir, targ_dir)
     
     # rewrite file path

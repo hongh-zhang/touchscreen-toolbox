@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
@@ -39,16 +40,16 @@ def cut_video(vid_info):
     # retrieve time info
     try:
         start, end = vid_info['time']
+        
+        # cut & save to <target_path>
+        vid_info['target_path'] = add_suffix(vid_info, '_c')
+        ffmpeg_extract_subclip(vid_info['path'], start, end, targetname=vid_info['target_path'])
+
+        vid_info['prep'].append('c')
     
     except KeyError:
-        tb.utils.eprint(f"Time information not found for {vid_info['path']}")
-        start, end = 0, vid_info['length']
-    
-    # cut & save to <target_path>
-    vid_info['target_path'] = add_suffix(vid_info, '_c')
-    ffmpeg_extract_subclip(vid_info['path'], start, end, targetname=vid_info['target_path'])
-    
-    vid_info['prep'].append('c')
+        utils.eprint(f"Time information not found for {vid_info['path']}")
+
 
 
 def brightness(vid_info):
