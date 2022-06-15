@@ -35,7 +35,7 @@ FORMATS = ['.mp4']
 # vid info related
 # ------
 # pattern for decode name in utils/vid_info.py
-PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2}) (\S+)"
+PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2})\s?(\S*)"
 ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix']
 
 INFO_LS = ['file_name', 'mouse_id', 'exp_date', 'time', 'fps', 'prep']  # elements for export

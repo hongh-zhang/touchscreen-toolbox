@@ -20,6 +20,8 @@ def analyze_folder(folder_path: str, recursive: bool=True, **kwargs) -> None:
             
         elif recursive and len(ext)==0:
             analyze_folder(targ_path, recursive=recursive, **kwargs)
+            
+    postprocess.record_stats(folder_path)
 
 
 def analyze_video(video_path: str, pose: bool=False, post: bool=False, time_file: str=False) -> None:

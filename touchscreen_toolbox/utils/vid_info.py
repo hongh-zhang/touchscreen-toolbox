@@ -60,7 +60,7 @@ def decode_name(video_name: str):
     try:
         # decode & save to vid_info
         matched = [''.join(i.split('-')) for i in re.match(cfg.PATTERN, video_name).groups()]
-        sucess = True
+        success = True
         name_info = {i:j for i,j in zip(cfg.ELEMENTS, matched)}
     
     except AttributeError:
