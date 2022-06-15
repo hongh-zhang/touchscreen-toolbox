@@ -26,7 +26,7 @@ def get_vid_info(video_path: str, overwrite: bool=False):
     # read saved info
     if os.path.exists(vid_info['save_path']) and (not overwrite):
         load_info(vid_info)
-        print(f"Loaded existing {vid_inf['save_path']}")
+        print(f"Loaded existing {vid_info['save_path']}")
         
     else:
         # deconstruct information in video name
@@ -79,6 +79,7 @@ def get_vid_fps(video_path):
 
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.CAP_PROP_FPS)
+    #frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video.release()
     
     return fps
@@ -120,3 +121,8 @@ def save_info(vid_info: dict) -> None:
 def load_info(vid_info: dict) -> None:
     file_path = os.path.join(vid_info['dir'], cfg.INF_FOLDER, vid_info['vid_name'])
     vid_info.update(io.pickle_load(file_path+'.pickle'))
+    
+    
+def export_info(vid_info: dict) -> list:
+    val_ls = [str(vid_info[elem]) for elem in cfg.INFO_LS]
+    return val_ls
