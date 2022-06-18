@@ -5,6 +5,7 @@
 FPS = 25
 TRAY_LENGTH = 26.8  # (cm)
 P_CUTOFF = 0.1 # confidence threshold
+DECIMALS = 2
 
 # keypoints
 MICE = ('snout',
@@ -27,6 +28,7 @@ DLC_CONFIG = "touchscreen_toolbox/DLC/config.yaml"  # path of deeplabcut config
 DLC_FOLDER = "DLC"      # name of subfolder to put files from DLC (h5 & pickle)
 RST_FOLDER = "results"  # name of subfolder to put analyzed results (csv)
 INF_FOLDER = "info"
+FOLDERS = (DLC_FOLDER, RST_FOLDER, INF_FOLDER)
 STATS_NAME = 'statistics.csv'
 FORMATS = ['.mp4']
 
@@ -38,7 +40,7 @@ FORMATS = ['.mp4']
 PATTERN = r"^(\d+) - (\S+) - (\d{2}-\d{2}-\d{2}) (\d{2}-\d{2})\s?(\S*)"
 ELEMENTS = ['mouse_id', 'chamber', 'exp_date', 'exp_time', 'suffix']
 
-INFO_LS = ['file_name', 'mouse_id', 'exp_date', 'time', 'fps', 'prep']  # elements for export
+INFO_LS = ['file_name', 'mouse_id', 'chamber', 'exp_date', 'time', 'fps', 'prep']  # elements for export
 
 
 

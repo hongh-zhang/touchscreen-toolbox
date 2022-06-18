@@ -87,8 +87,13 @@ def label_video(video_path):
     move_files(files, folder_path, dlc_folder)
 
 
-def read_dlc_csv(path: str):
-    return pd.read_csv(path, skiprows=[0, 1, 2, 3], names=(['frame'] + cfg.HEADERS)).set_index('frame')
+def read_dlc_csv(path):
+    if type(path) == str:
+        return pd.read_csv(path, skiprows=[0, 1, 2, 3], names=(['frame'] + cfg.HEADERS)).set_index('frame')
+    elif type(path) == dict:
+        return read_dlc_csv(os.path.join(path['dir'], path['result']))
+    else:
+        raise TypeError("Invalid input")
 
 
 

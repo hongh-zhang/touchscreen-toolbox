@@ -10,6 +10,10 @@ def analyze_folder(folder_path: str, recursive: bool=True, **kwargs) -> None:
     """
     Analyze a folder (recursively)
     """
+    
+    if recursive and (os.path.basename(folder_path) in cfg.FOLDERS):
+        return 1
+    
     for i in os.listdir(folder_path):
         
         name, ext = os.path.splitext(i)
@@ -45,7 +49,11 @@ def analyze_video(video_path: str, pose: bool=False, post: bool=False, time_file
     
     # postprocess
     if post:
-        ...
+        data = extract.read_dlc_csv(vid_info)
+        data = postprocess.refine(data)
+        data = postprocess.standardize(data)
+#         postprocess.feature(vid_info)
+        postprocess.save_data(vid_info, data)
         
         
 def initialize(video_path: str) -> dict:
