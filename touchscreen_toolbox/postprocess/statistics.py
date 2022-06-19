@@ -5,7 +5,8 @@ from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
 from touchscreen_toolbox.extract.dlc import read_dlc_csv
 
-
+import logging
+logger = logging.getLogger(__name__)
 
 def get_stats(data: pd.DataFrame):
     """Produce statistics about miss predicted values"""
@@ -48,4 +49,4 @@ def record_stats(folder_path: str):
     save_path = os.path.join(folder_path, cfg.RST_FOLDER, 'stats.csv')
     pd.DataFrame(values).to_csv(save_path, index=False, header=False)
     
-    print(f"Recorded statistics for {folder_path}")
+    logger.info(f"Recorded statistics for {folder_path}")

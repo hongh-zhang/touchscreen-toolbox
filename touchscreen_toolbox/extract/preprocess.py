@@ -5,7 +5,8 @@ from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
-
+import logging
+logger = logging.getLogger(__name__)
 
 def preprocess_video(vid_info: dict, cut=True):
     """
@@ -35,7 +36,7 @@ def cut_video(vid_info):
     *overwrite
     """
     
-    print(f"Cutting '{vid_info['target_path']}'...")
+    logger.info(f"Cutting '{vid_info['target_path']}'...")
     
     # retrieve time info
     try:
@@ -48,7 +49,7 @@ def cut_video(vid_info):
         vid_info['prep'].append('c')
     
     except KeyError:
-        utils.eprint(f"Time information not found for {vid_info['path']}")
+        logger.warning(f"Time information not found for {vid_info['path']}")
 
 
 
@@ -64,7 +65,7 @@ def brightness(vid_info):
     # only apply preprocessing if the average brightness is lower than threshold
     if brightness_check(target_video):
         
-        print(f"Increasing brightness for '{target_video}'...")
+        logger.info(f"Increasing brightness for '{target_video}'...")
         
         vid_info['target_path'] = add_suffix(vid_info, '_b')
 

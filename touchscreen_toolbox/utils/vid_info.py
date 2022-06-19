@@ -5,14 +5,16 @@ import sys
 import shutil
 import numpy as np
 import pandas as pd
-from time import (localtime, strftime)
 from moviepy.editor import VideoFileClip
+
 import touchscreen_toolbox.config as cfg
 from . import io
 
+import logging
+logger = logging.getLogger(__name__)
 
 
-def get_vid_info(video_path: str, overwrite: bool=False):
+def get_vid_info(video_path: str, overwrite: bool=False, time_file: str=False):
     """Get dictionary of video information from <video_path>"""
     
     vid_info = {'path': video_path, 
@@ -26,12 +28,14 @@ def get_vid_info(video_path: str, overwrite: bool=False):
     # read saved info
     if os.path.exists(vid_info['save_path']) and (not overwrite):
         load_info(vid_info)
-        print(f"Loaded existing {vid_info['save_path']}")
+        logger.info(f"Loaded existing {vid_info['save_path']}")
         
     else:
         # deconstruct information in video name
         success, name_info = decode_name(vid_info['vid_name'])
         vid_info.update(name_info)
+        if time_file:
+            get_time(vid_info, time_file)
 
         vid_info['length'] = get_vid_len(video_path)
         vid_info['fps'] = get_vid_fps(video_path)
@@ -64,7 +68,7 @@ def decode_name(video_name: str):
         name_info = {i:j for i,j in zip(cfg.ELEMENTS, matched)}
     
     except AttributeError:
-        print(f"Pattern unmatched: {video_name}")
+        logger.warning(f"Pattern unmatched: {video_name}")
     
     return success, name_info
 
@@ -124,5 +128,5 @@ def load_info(vid_info: dict) -> None:
     
     
 def export_info(vid_info: dict) -> list:
-    val_ls = [str(vid_info[elem]) for elem in cfg.INFO_LS]
+    val_ls = [str(vid_info.get(elem, 'NA')) for elem in cfg.INFO_LS]
     return val_ls

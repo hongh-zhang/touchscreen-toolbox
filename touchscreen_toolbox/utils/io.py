@@ -4,9 +4,9 @@ import sys
 import shutil
 import pickle
 import pandas as pd
-from time import (localtime, strftime)
 import touchscreen_toolbox.config as cfg
-
+import logging
+logger = logging.getLogger(__name__)
 
 
 def is_generated(folder_path):
@@ -25,12 +25,12 @@ def mk_dir(path: str, force: bool=True, verbose: bool=True) -> None:
     if os.path.exists(path):
         if force:
             if verbose:
-                print(f"Removing existing {os.path.basename(path)} folder")
+                logger.info(f"Removing existing {os.path.basename(path)} folder")
             shutil.rmtree(path)
                     
         else:
             if verbose:
-                print(f"Folder already exists, failed to make directory")
+                logger.info(f"Folder already exists, failed to make directory")
             return None
 
     os.mkdir(path)
@@ -89,33 +89,6 @@ def initialize_folders(vid_info: dict) -> None:
         mk_dir(os.path.join(dir_path, cfg.RST_FOLDER), force=False)
         mk_dir(os.path.join(dir_path, cfg.INF_FOLDER), force=False)
 
-
-# logger
-# ------------------------
-# modified from
-# https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
-class Tee(object):
-    def __init__(self, file):
-        self.file = open(file, 'w')
-        self.stdout = sys.stdout
-        sys.stdout = self
-        
-    def __del__(self):
-        try:
-            self.close()
-        except: pass
-        
-    def write(self, data):
-        if data != '\n':
-            data = strftime("%H:%M:%S    ", localtime()) + data
-        self.file.write(data)
-        self.stdout.write(data)
-        
-    def flush(self): self.file.flush()
-        
-    def close(self):
-        sys.stdout = self.stdout
-        self.file.close()
 
 
 def eprint(*args, **kwargs):
