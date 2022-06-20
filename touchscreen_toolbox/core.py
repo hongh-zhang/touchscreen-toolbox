@@ -60,10 +60,12 @@ def analyze_video(
     if post:
         logger.info("Postprocessing...")
         data = pe.read_dlc_csv(vid_info)
-        data = postprocess.refine(data)
-        data = postprocess.standardize(data)
-        #         postprocess.feature(vid_info)
+        data = postprocess.refine_data(data)
+        data = postprocess.standardize_data(data)
+        data = postprocess.engineering(data)
         postprocess.save_data(vid_info, data)
+    
+    logger.info("Done!")
 
 
 def initialize(video_path: str, time_file: str = False) -> dict:

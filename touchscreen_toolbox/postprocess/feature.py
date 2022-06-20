@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from math import pi
 from touchscreen_toolbox import utils
+from touchscreen_toolbox import config as cfg
 
 
 def distance(data: pd.DataFrame, pt1: str, pt2: str):
@@ -39,7 +40,7 @@ def orientation(data: pd.DataFrame, pt1: str, pt2: str):
 
 
 def engineering(data: pd.DataFrame):
-    """Feature engineering"""
+    """Hardecoded feature engineering"""
 
     # orientation
     angle = orientation(data, "snout", "tail1")  # angle ~ [0, 2pi]
@@ -70,4 +71,4 @@ def engineering(data: pd.DataFrame):
     # acceleration
     for col in v_cols:
         data["a-" + col[2:]] = velocity1(data, col)
-    return data.round(decimals=4)
+    return data.round(decimals=cfg.DECIMALS)

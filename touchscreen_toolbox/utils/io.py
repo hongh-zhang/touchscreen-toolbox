@@ -10,6 +10,18 @@ import touchscreen_toolbox.config as cfg
 logger = logging.getLogger(__name__)
 
 
+def clear_results(folder_path: str):
+    """Remove files in the result folder,
+    except for pose estimation statistics"""
+    
+    if os.path.basename(folder_path) != cfg.RST_FOLDER:
+        clear_results(os.path.join(folder_path, cfg.RST_FOLDER))
+    else:
+        for file in listdir(folder_path):
+            if file != cfg.STATS_NAME:
+                os.remove(os.path.join(folder_path, file))
+
+
 def listdir(path: str):
     return os_sorted(os.listdir(path))
 

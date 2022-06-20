@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from itertools import groupby
 from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
 from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
