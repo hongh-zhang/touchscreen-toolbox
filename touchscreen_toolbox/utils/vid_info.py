@@ -36,11 +36,12 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
         # deconstruct information in video name
         success, name_info = decode_name(vid_info["vid_name"])
         vid_info.update(name_info)
-        if time_file:
-            get_time(vid_info, time_file)
-
+        
         vid_info["length"] = get_vid_len(video_path)
         vid_info["fps"] = get_vid_fps(video_path)
+        if time_file:
+            get_time(vid_info, time_file)
+            vid_info['frames'] = [int(i * cfg.FPS) for i in vid_info['time']]
 
     return vid_info
 
@@ -87,13 +88,13 @@ def get_vid_fps(video_path):
 
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.CAP_PROP_FPS)
-    # frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+#     frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video.release()
 
     return fps
 
 
-def get_time(vid_info: dict, time_file: str):
+def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> None:
     """
     Get time to cut video from <time_file>
 
@@ -114,7 +115,8 @@ def get_time(vid_info: dict, time_file: str):
     video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
 
     start = video_time["vid_start"]
-    end = video_time["vid_end"]
+    end = video_time["vid_end"] 
+    end = (end+buffer) if (end+buffer <= vid_info['length']) else vid_info['length']
 
     vid_info["time"] = (start, end)
 

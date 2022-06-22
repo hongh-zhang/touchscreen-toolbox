@@ -72,12 +72,20 @@ def cleanup(vid_info: dict) -> None:
 #     move_files(files, folder_path, dlc_folder)
 
 
-def read_dlc_csv(path):
-    if type(path) == str:
-        return pd.read_csv(
-            path, skiprows=[0, 1, 2, 3], names=(["frame"] + cfg.HEADERS)
-        ).set_index("frame")
-    elif type(path) == dict:
-        return read_dlc_csv(os.path.join(path["dir"], path["result"]))
+def read_dlc_csv(path: str, frames: tuple=None):
+    """
+    Read pose estimation result produced by DLC
+    """
+    if type(path) == dict:  # vid_info
+        return read_dlc_csv(os.path.join(path["dir"], path["result"]), path['frames'])
+    elif type(path) == str:  # csv path
+        data = pd.read_csv(path, 
+                           skiprows=[0, 1, 2, 3], 
+                           names=(["frame"] + cfg.HEADERS)
+               ).set_index("frame")
+        if frames is not None:
+            return data.iloc[frames[0]:frames[1], :]
+        else:
+            return data
     else:
-        raise TypeError("Invalid input")
+        raise TypeError("Invalid input type")

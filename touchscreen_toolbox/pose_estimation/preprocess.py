@@ -17,8 +17,8 @@ def preprocess_video(vid_info: dict, cut=True):
 
     vid_info["prep"] = []  # to record preprocess applied
 
-    if cut:
-        cut_video(vid_info)
+#     if cut:
+#         cut_video(vid_info)
 
     brightness(vid_info)
 
@@ -37,12 +37,11 @@ def cut_video(vid_info):
         start, end = vid_info["time"]
 
         # cut & save to <target_path>
-        vid_info["target_path"] = add_suffix(vid_info, "_c")
-        ffmpeg_extract_subclip(
-            vid_info["path"], start, end, targetname=vid_info["target_path"]
-        )
+        target = add_suffix(vid_info, "_c")
+        ffmpeg_extract_subclip(vid_info["path"], start, end, targetname=target)
 
         vid_info["prep"].append("c")
+        vid_info["target_path"] = target
 
     except KeyError:
         logger.warning(f"Time information not found for {vid_info['path']}")
@@ -93,24 +92,27 @@ def map_video(
         function to be mapped to each frame
 
     """
+    try:
+        # initialize opencv
+        cap = cv2.VideoCapture(video_in)
+        fourcc = cv2.VideoWriter_fourcc(*fourcc)
+        writer = cv2.VideoWriter(video_out, fourcc, fps, dim)
 
-    # initialize opencv
-    cap = cv2.VideoCapture(video_in)
-    fourcc = cv2.VideoWriter_fourcc(*fourcc)
-    writer = cv2.VideoWriter(video_out, fourcc, fps, dim)
+        # iterate each frame and apply function
+        while cap.isOpened():
+            ret, frame = cap.read()
 
-    # iterate each frame and apply function
-    while cap.isOpened():
-        ret, frame = cap.read()
-
-        if ret:
-            frame = func(frame)
-            writer.write(frame)
-        else:
-            break
-
-    cap.release()
-    writer.release()
+            if ret:
+                frame = func(frame)
+                writer.write(frame)
+            else:
+                break
+    except Exception as exc:
+        raise exc
+    # release file before terminating
+    finally:
+        cap.release()
+        writer.release()
 
 
 def lut(frame, lut_table):

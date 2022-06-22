@@ -8,6 +8,7 @@ from . import pose_estimation as pe
 logger = logging.getLogger(__name__)
 
 
+
 def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
     """
     Analyze a folder (recursively)
@@ -34,6 +35,7 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
             logger.exception(e)
 
     postprocess.record_stats(folder_path)
+
 
 
 def analyze_video(
@@ -66,6 +68,7 @@ def analyze_video(
         postprocess.save_data(vid_info, data)
     
     logger.info("Done!")
+
 
 
 def initialize(video_path: str, time_file: str = False) -> dict:

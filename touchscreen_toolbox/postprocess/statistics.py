@@ -44,7 +44,7 @@ def record_stats(folder_path: str):
 
         # get data
         info = utils.export_info(vid_info)
-        stats = get_stats(read_dlc_csv(csv_file))
+        stats = get_stats(read_dlc_csv(vid_info))
         values.append(info + stats)
 
     # save
