@@ -30,7 +30,10 @@ def get_stats(data: pd.DataFrame):
 
 def record_stats(folder_path: str):
     """Record statistics of an analyzed folder"""
-
+    if not utils.is_valid_folder(folder_path):
+        logger.warning(f"Invalid folder for record_stats: {folder_path}")
+        return 1
+    
     # values of output csv
     # format headers
     values = [cfg.HEAD1, cfg.HEAD2]

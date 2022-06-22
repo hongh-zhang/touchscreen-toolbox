@@ -20,14 +20,13 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
         return 1
 
     for i in utils.listdir(folder_path):
-
         try:
             targ_path = os.path.join(folder_path, i)
 
             if os.path.splitext(i)[1] in cfg.FORMATS:
                 analyze_video(targ_path, **kwargs)
 
-            elif recursive and os.path.isdir(i):
+            elif recursive and os.path.isdir(targ_path):
                 analyze_folder(targ_path, recursive=recursive, **kwargs)
 
         except Exception as e:

@@ -23,7 +23,11 @@ def clear_results(folder_path: str):
 
 
 def listdir(path: str):
-    return os_sorted(os.listdir(path))
+    if os.path.exists(path):
+        return os_sorted(os.listdir(path))
+    else:
+        logger.warning(f"Invalid input for listdir: {path}")
+        return []
 
 
 def mk_dir(path: str, force: bool = True, verbose: bool = True) -> None:
