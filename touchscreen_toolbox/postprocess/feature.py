@@ -26,7 +26,7 @@ def velocity2(data: pd.DataFrame, col: str):
     return np.sqrt(dx ** 2 + dy ** 2)
 
 
-def orientation(data: pd.DataFrame, pt1: str, pt2: str):
+def get_angle(data: pd.DataFrame, pt1: str, pt2: str):
     """Orientation, defined as the angle between pt1, pt2, horizontal axis"""
     # calculate angle
     dx = data[pt1 + "_x"] - data[pt2 + "_x"]
@@ -39,21 +39,35 @@ def orientation(data: pd.DataFrame, pt1: str, pt2: str):
     return angle
 
 
-def engineering(data: pd.DataFrame):
+def get_angle_v(angles):
+    """Continuous angular velocity"""
+    angles2 = (angles<180).astype(int) * 360 + angles  # ~[180, 360] for continuity
+    v_angles =  utils.absmin(np.diff(angles, prepend=angles.iloc[0]), 
+                             np.diff(angles2, prepend=angles2.iloc[0]))
+    return v_angles
+
+
+
+def engineering(data: pd.DataFrame, fps: int):
     """Hardecoded feature engineering"""
-
+    
+    data = data.copy()
+    
+    data['time'] = data['frame'] / fps
+    
     # orientation
-    angle = orientation(data, "snout", "tail1")  # angle ~ [0, 2pi]
-    data["angle"] = angle
-    data["forward"] = np.logical_and(angle > 0, angle < pi).astype(int)
+    h_angle = get_angle(data, 'snout', 'spine1')
+    data['head_angle'] = h_angle
+    data['v-head_angle'] = get_angle_v(h_angle)
 
-    # angular velocity
-    # angle2 ~ [pi, 3pi], to keep delta-angle continuous at angle=0/2pi
-    angle2 = (angle < pi).astype(int) * 2 * pi + angle
-    data["v-angle"] = utils.absmin(
-        np.diff(angle, prepend=angle.iloc[0]), np.diff(angle2, prepend=angle2.iloc[0])
-    )
+    b_angle = get_angle(data, 'snout', 'tail1')
+    data['body_angle'] = b_angle
+    data['v-body_angle'] = get_angle_v(b_angle)
 
+    
+    # body length
+    data['snout-tail'] = distance(data, 'snout', 'tail1')
+    
     # snout to key points
     d_cols = []
     for col in ("l_screen", "m_screen", "r_screen", "food_port"):

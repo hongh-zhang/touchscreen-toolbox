@@ -66,7 +66,7 @@ def brightness(vid_info):
 
         vid_info["prep"].append("b")
 
-        os.remove(target_video)
+#         os.remove(target_video)
 
 
 def map_video(
