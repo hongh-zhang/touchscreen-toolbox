@@ -1,15 +1,15 @@
 import os
 import re
 import cv2
+import logging
 import pandas as pd
 from moviepy.editor import VideoFileClip
 
-import touchscreen_toolbox.config as cfg
-from . import io
-
-import logging
+from .utils import io
+from . import config as cfg
 
 logger = logging.getLogger(__name__)
+
 
 
 def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = False):

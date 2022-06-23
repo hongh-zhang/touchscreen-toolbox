@@ -1,6 +1,7 @@
 import os
 import logging
 from . import utils
+from . import video_info
 from . import postprocess
 from . import config as cfg
 from . import pose_estimation as pe
@@ -55,7 +56,7 @@ def analyze_video(
         pe.preprocess_video(vid_info)
         pe.dlc_analyze(vid_info)
         pe.cleanup(vid_info)
-        utils.save_info(vid_info)
+        video_info.save_info(vid_info)
 
     # postprocess
     if post:
@@ -73,7 +74,7 @@ def analyze_video(
 def initialize(video_path: str, time_file: str = False) -> dict:
     """Initialize result folders and get video info"""
 
-    vid_info = utils.get_vid_info(video_path, time_file=time_file)
+    vid_info = video_info.get_vid_info(video_path, time_file=time_file)
     utils.initialize_folders(vid_info)
 
     return vid_info

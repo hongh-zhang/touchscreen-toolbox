@@ -1,6 +1,7 @@
 import sys
 import logging
 from .core import *
+from .video_info import *
 from . import utils
 from . import postprocess
 from . import pose_estimation

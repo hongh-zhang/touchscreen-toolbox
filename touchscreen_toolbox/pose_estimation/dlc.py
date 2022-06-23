@@ -72,7 +72,7 @@ def cleanup(vid_info: dict) -> None:
 #     move_files(files, folder_path, dlc_folder)
 
 
-def read_dlc_csv(path: str, frames: tuple=None):
+def read_dlc_csv(path: str, frames: tuple=None) -> pd.DataFrame:
     """
     Read pose estimation result produced by DLC
     """
