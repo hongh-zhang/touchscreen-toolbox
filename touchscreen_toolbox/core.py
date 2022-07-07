@@ -64,8 +64,10 @@ def analyze_video(
         data = pe.read_dlc_csv(vid_info)
         data = postprocess.refine_data(data)
         data = postprocess.standardize_data(data)
-        data = postprocess.engineering(data, fps=vid_info['fps'])
+        data = postprocess.engineering(data, vid_info['fps'])
+        # postprocess.merge_timestamps(vid_info)
         postprocess.save_data(vid_info, data)
+        video_info.save_info(vid_info)
     
     logger.info("Done!")
 

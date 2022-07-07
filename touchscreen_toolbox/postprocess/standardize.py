@@ -8,9 +8,11 @@ import touchscreen_toolbox.utils as utils
 
 
 
-def standardize_data(data: pd.DataFrame):
+def standardize_data(data: pd.DataFrame) -> None:
     """Standardize pose estimation data"""
-
+    
+    data = data.copy()
+    
     # flip
     data[cfg.YCOLS] *= -1
 

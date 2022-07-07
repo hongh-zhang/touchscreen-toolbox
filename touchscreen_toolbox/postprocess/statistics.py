@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from itertools import groupby
 from touchscreen_toolbox import utils
+from touchscreen_toolbox import video_info
 import touchscreen_toolbox.config as cfg
 from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
 
@@ -46,7 +47,7 @@ def record_stats(folder_path: str):
         csv_file = os.path.join(folder_path, vid_info["result"])
 
         # get data
-        info = utils.export_info(vid_info)
+        info = video_info.export_info(vid_info)
         stats = get_stats(read_dlc_csv(vid_info))
         values.append(info + stats)
 

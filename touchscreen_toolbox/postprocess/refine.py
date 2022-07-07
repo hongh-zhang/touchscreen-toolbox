@@ -2,6 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 from itertools import groupby
+import scipy.signal
+
 import touchscreen_toolbox.config as cfg
 import touchscreen_toolbox.utils as utils
 from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
@@ -9,18 +11,23 @@ from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
 
 # prediction refinement
 # ----------------------------------------------
-def refine_data(data: pd.DataFrame):
+def refine_data(data: pd.DataFrame) -> None:
+    """Refine pose estimation data"""
+    data = data.copy()
     data = cutoff(data)
     data = data.drop(columns=cfg.CCOLS)
     data = median_filter(data)
+    data = savgol_filter(data)
     return data
 
 
 def save_data(vid_info: dict, data: pd.DataFrame):
+    """Save data to result folder"""
     data.to_csv(
         os.path.join(vid_info["dir"], cfg.RST_FOLDER, vid_info["vid_name"] + ".csv")
     )
 
+    
 
 def cutoff(data: pd.DataFrame, p_cutoff: float = cfg.P_CUTOFF):
     """
@@ -31,7 +38,7 @@ def cutoff(data: pd.DataFrame, p_cutoff: float = cfg.P_CUTOFF):
 
     # iterate columns in group of three (x, y, confidence) for each body part
     for i in range(0, data.shape[1], 3):
-        idx = data.index[data.iloc[:, i + 2] < p_cutoff]
+        idx = np.where(data.iloc[:, i + 2] < p_cutoff)
         data.iloc[idx, i] = np.NaN
         data.iloc[idx, i + 1] = np.NaN
 
@@ -55,5 +62,18 @@ def median_filter(data: pd.DataFrame, window_len: int = 5):
             .median(skipna=False)
         )
         data.iloc[idx, i] = np.NaN
+
+    return data
+
+
+def savgol_filter(data: pd.DataFrame, window_len: int=5, polyorder: int=1, deriv=0, delta=1.0) -> pd.DataFrame:
+    """
+    Smooth trajectory with Savitzky-Golay filter
+    """
+
+    data = data.copy()
+
+    for i in range(data.shape[1]):
+        data.iloc[:, i] = scipy.signal.savgol_filter(data.iloc[:, i], window_len, polyorder=polyorder, deriv=deriv, delta=delta)
 
     return data

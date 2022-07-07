@@ -3,6 +3,7 @@
 
 # test folder
 tests/
+notebooks/
 
 # log files
 *.txt
@@ -10,6 +11,8 @@ logs.log
 logs.txt
 
 # DLC files
+deeplabcut/
+Bandit-Harris-2022-03-01/
 *.pickle
 *.h5
 

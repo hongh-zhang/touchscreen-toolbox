@@ -136,3 +136,7 @@ def load_info(vid_info: dict) -> None:
 def export_info(vid_info: dict) -> list:
     val_ls = [str(vid_info.get(elem, "NA")) for elem in cfg.INFO_LS]
     return val_ls
+
+
+def save_data(vid_info: dict) -> None:
+    pass

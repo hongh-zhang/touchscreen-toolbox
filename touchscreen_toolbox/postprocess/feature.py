@@ -8,30 +8,38 @@ from touchscreen_toolbox import config as cfg
 
 
 
-def engineering(vid_info: dict) -> None:
-    vid_info['data'] = engineering2(vid_info['data'], vid_info['fps'])
-
-
-def engineering2(data: pd.DataFrame, fps: int) -> pd.DataFrame:
+def engineering(data: pd.DataFrame, fps) -> None:
     """Feature engineering (*hardcoded)"""
     
     data = data.copy()
     
     data['time'] = data['frame'] / fps
     
-    # orientation
+    # (absolute) orientation
     neck = (select_bodypart(data, 'spine1') + select_bodypart(data, 'lEar') + select_bodypart(data, 'rEar')) / 3
-    h_angle = get_angle(select_bodypart(data, 'snout'), neck)
+    h_angle = utils.absangle(select_bodypart(data, 'snout'), neck)
     data['head_angle'] = h_angle
     data['v-head_angle'] = get_angle_v(h_angle)
-    b_angle = get_angle(neck, select_bodypart(data, 'tail1'))
+    b_angle = utils.absangle(neck, select_bodypart(data, 'tail1'))
     data['body_angle'] = b_angle
     data['v-body_angle'] = get_angle_v(b_angle)
 
     
-    # body length
+    # body length & angle
     data['snout-tail'] = distance(data, 'snout', 'tail1')
+    data['snout-spine1'] = distance(data, 'snout', 'spine1')
+    data['spine1-spine2'] = distance(data, 'spine1', 'spine2')
+    data['spine2-tail1'] = distance(data, 'spine2', 'tail1')
     
+    # (relative) angle
+    data['snout-spine1-spine2'] = utils.angle3(select_bodypart(data, 'snout'),
+                                               select_bodypart(data, 'spine1'),
+                                               select_bodypart(data, 'spine2'))
+    data['spine1-spine2-tail1'] = utils.angle3(select_bodypart(data, 'spine1'),
+                                               select_bodypart(data, 'spine2'),
+                                               select_bodypart(data, 'tail1'))
+    
+
     # snout to key points
     d_cols = []
     for col in ("l_screen", "m_screen", "r_screen", "food_port"):
@@ -75,26 +83,13 @@ def velocity2(data: pd.DataFrame, col: str):
 
 
 def select_bodypart(data, bodypart):
+    """Index bodypart coordinates as 2d array"""
     return data[[bodypart+'_x', bodypart+'_y']].values
-
-
-def get_angle(pts1: np.ndarray, pts2: np.ndarray):
-    """Orientation, defined as the angle between pt1, pt2, horizontal axis"""
-    # calculate angle
-    dx = pts1[:,0] - pts2[:,0]
-    dy = pts1[:,1] - pts2[:,1]
-    angle = np.arctan2(dy, dx)
-
-    # [-180, 180] -> [0, 360]
-    angle += (angle < 0).astype(int) * 2 * pi + angle
-    angle *= 180 / pi
-
-    return angle
 
 
 def get_angle_v(angles: pd.DataFrame):
     """Continuous angular velocity"""
     angles2 = (angles<180).astype(int) * 180 + angles  # ~[180, 540] for continuity
-    v_angles =  utils.absmin(np.diff(angles, prepend=angles.iloc[0]), 
-                             np.diff(angles2, prepend=angles2.iloc[0]))
+    v_angles =  utils.absmin(np.diff(angles, prepend=angles[0]), 
+                             np.diff(angles2, prepend=angles2[0]))
     return v_angles
