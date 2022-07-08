@@ -13,7 +13,7 @@ def engineering(data: pd.DataFrame, fps) -> None:
     
     data = data.copy()
     
-    data['time'] = data['frame'] / fps
+    data['time'] = data.index.values / fps
     
     # (absolute) orientation
     neck = (select_bodypart(data, 'spine1') + select_bodypart(data, 'lEar') + select_bodypart(data, 'rEar')) / 3

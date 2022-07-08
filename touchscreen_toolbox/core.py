@@ -39,7 +39,7 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
 
 
 def analyze_video(
-    video_path: str, pose: bool = False, post: bool = False, time_file: str = False
+    video_path: str, pose: bool = False, post: bool = False, time_file: str = False, timestamps: str = False
 ) -> None:
     """
     Analyze a video
@@ -65,7 +65,7 @@ def analyze_video(
         data = postprocess.refine_data(data)
         data = postprocess.standardize_data(data)
         data = postprocess.engineering(data, vid_info['fps'])
-        # postprocess.merge_timestamps(vid_info)
+        data = postprocess.merge(vid_info, data, timestamps)
         postprocess.save_data(vid_info, data)
         video_info.save_info(vid_info)
     
