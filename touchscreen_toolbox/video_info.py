@@ -29,7 +29,7 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
 
     # read saved info
     if os.path.exists(vid_info["save_path"]) and (not overwrite):
-        load_info(vid_info)
+        vid_info = load_info(vid_info)
         logger.info(f"Loaded existing {vid_info['save_path']}")
 
     else:
@@ -129,8 +129,11 @@ def save_info(vid_info: dict) -> None:
 
 
 def load_info(vid_info: dict) -> None:
+    """Load saved vid_info from pickle, updates file path if changed"""
     file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"])
-    vid_info.update(io.pickle_load(file_path + ".pickle"))
+    saved = io.pickle_load(file_path + ".pickle")
+    saved.update(vid_info)
+    return saved
 
 
 def export_info(vid_info: dict) -> list:
@@ -138,5 +141,8 @@ def export_info(vid_info: dict) -> list:
     return val_ls
 
 
-def save_data(vid_info: dict) -> None:
-    pass
+def save_data(vid_info: dict, data: pd.DataFrame):
+    """Save data to result folder"""
+    data.to_csv(
+        os.path.join(vid_info["dir"], cfg.RST_FOLDER, vid_info["vid_name"] + ".csv")
+    )

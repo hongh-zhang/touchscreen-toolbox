@@ -20,13 +20,6 @@ def refine_data(data: pd.DataFrame) -> None:
     data = savgol_filter(data)
     return data
 
-
-def save_data(vid_info: dict, data: pd.DataFrame):
-    """Save data to result folder"""
-    data.to_csv(
-        os.path.join(vid_info["dir"], cfg.RST_FOLDER, vid_info["vid_name"] + ".csv")
-    )
-
     
 
 def cutoff(data: pd.DataFrame, p_cutoff: float = cfg.P_CUTOFF):
