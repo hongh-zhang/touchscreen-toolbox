@@ -101,7 +101,7 @@ def velocity1(data: pd.DataFrame, col: str):
 def velocity2(data: pd.DataFrame, col: str):
     """2D Velocity of vector values (from coordinates)"""
     dx = np.diff(data[col + "_x"], prepend=data[col + "_x"].iloc[0])
-    dy = np.diff(data[col + "_x"], prepend=data[col + "_x"].iloc[0])
+    dy = np.diff(data[col + "_y"], prepend=data[col + "_y"].iloc[0])
     return np.sqrt(dx ** 2 + dy ** 2)
 
 
