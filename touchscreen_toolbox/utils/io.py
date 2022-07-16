@@ -123,3 +123,7 @@ def pickle_load(path):
     with open(path, "rb") as file:
         obj = pickle.load(file)
     return obj
+
+
+def read_result(csv_path: str):
+    return pd.read_csv(csv_path, index_col=0, header=[0,1])

@@ -5,16 +5,21 @@ import numpy as np
 import pandas as pd
 from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
+from .feature import make_multiindex
 
 
-
-def merge(vid_info, data, timestamp_file):
+def merge(vid_info, data, timestamp_file, fps):
     """Merge information from touchscreen to pose estimation data"""
+    
     states, trials, attrs = search_timestamps(vid_info, timestamp_file)
-    data = merge_info(data, attrs)
-    data = merge_states(data, states)
-    data = merge_trials(data, trials)
-    return data.convert_dtypes()
+    
+    data2 = pd.DataFrame(data.index)
+    data2 = merge_info(data2, attrs)
+    data2 = merge_states(data2, states, fps=fps)
+    data2 = merge_trials(data2, trials)
+    
+    data2 = make_multiindex(data2, 'task')
+    return pd.concat([data, data2], axis=1)
 
 
 def search_timestamps(vid_info, timestamp_file):
@@ -41,13 +46,19 @@ def merge_info(data, attrs):
 def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps=25):                ############# <- remember to generalize fps!
     """Merge state timestamp"""
     # align starting time
-    states['time'] += data['time'].iloc[0]
-
+    states['time'] += data['frame'].iloc[0] / fps
     states['frame'] = (states['time'] * fps).astype(int)
+    states = states.drop('time', axis=1)
+    
     increment_duplicates(states, 'frame')
-
-    merged = data.merge(states.drop('time', axis=1), how='left', on='frame').set_index('frame')
+    states = states.set_index('frame')
+    merged = data.reset_index().merge(states, how='left', on='frame').set_index('frame')
     merged['state_'] = merged['state'].fillna(method='ffill')
+    
+    try:
+        merged.drop('index', axis=1, inplace=True)
+    except:
+        pass
     
     # count trial numbers
     merged = count_trials(merged)
@@ -66,15 +77,10 @@ def count_trials(data: pd.DataFrame):
     return data
 
 
-def merge_trials(data: pd.DataFrame, trials: pd.DataFrame, fps=25):  
+def merge_trials(data: pd.DataFrame, trials: pd.DataFrame):  
     """Merge trial information (reward probability etc.)"""
-    # use trial timestamp
-    ### this is inaccurate
-    # trials['time'] += data['time'].iloc[0]
-    # trials['frame'] = (trials['time'] * fps).astype(int)
-    # increment_duplicates(trials, 'frame')
-
-    merged = data.merge(trials.drop('time', axis=1), how='left', on='trial')
+    trials = trials.drop('time', axis=1)
+    merged = data.reset_index().merge(trials, how='left', on='trial').set_index('frame')
     for col in trials.columns:
         merged[col] = merged[col].fillna(method='ffill')
     
@@ -85,7 +91,8 @@ def merge_trials(data: pd.DataFrame, trials: pd.DataFrame, fps=25):
 # ------
 def increment_duplicates(df: pd.DataFrame, col: str):
     """Remove duplicates by incrementing the latter by 1"""
+    col = df.columns.get_loc(col)
     for i in range(1, len(df)):
-        prev, curr = df.loc[[i-1,i], col]
+        prev, curr = df.iloc[[i-1,i], col]
         if curr<=prev:
-            df.loc[i, col] = curr + 1
+            df.iloc[i, col] = curr + 1

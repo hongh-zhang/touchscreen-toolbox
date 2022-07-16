@@ -15,11 +15,12 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
     Analyze a folder (recursively)
     """
 
-    logger.info(f"Start analyzing {folder_path}...")
-
     if recursive and utils.is_generated(folder_path):
+        logger.info(f"Skipping folder {folder_path}...")
         return 1
-
+    
+    logger.info(f"Start analyzing {folder_path}...")
+    
     for i in utils.listdir(folder_path):
         try:
             targ_path = os.path.join(folder_path, i)
@@ -64,8 +65,8 @@ def analyze_video(
         data = pe.read_dlc_csv(vid_info)
         data = postprocess.refine_data(data)
         data = postprocess.standardize_data(data)
-        data = postprocess.engineering(data, vid_info['fps'])
-        data = postprocess.merge(vid_info, data, timestamps)
+        data = postprocess.engineering(data)
+        data = postprocess.merge(vid_info, data, timestamps, vid_info['fps'])
         video_info.save_data(vid_info, data)
         video_info.save_info(vid_info)
     

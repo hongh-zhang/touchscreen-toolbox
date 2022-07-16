@@ -8,56 +8,79 @@ from touchscreen_toolbox import config as cfg
 
 
 
-def engineering(data: pd.DataFrame, fps) -> None:
+def engineering(data: pd.DataFrame) -> None:
     """Feature engineering (*hardcoded)"""
     
-    data = data.copy()
+    internal = internal_behaviour(data).set_index(data.index)
+    external = external_behaviour(data).set_index(data.index)
     
-    data['time'] = data.index.values / fps
+    data = pd.concat([make_multiindex(data, 'coordinate'),
+               make_multiindex(internal, 'internal'),
+               make_multiindex(external, 'external')], axis=1)
     
-    # (absolute) orientation
-    neck = (select_bodypart(data, 'spine1') + select_bodypart(data, 'lEar') + select_bodypart(data, 'rEar')) / 3
-    h_angle = utils.absangle(select_bodypart(data, 'snout'), neck)
-    data['head_angle'] = h_angle
-    data['v-head_angle'] = get_angle_v(h_angle)
-    b_angle = utils.absangle(neck, select_bodypart(data, 'tail1'))
-    data['body_angle'] = b_angle
-    data['v-body_angle'] = get_angle_v(b_angle)
+    return data.round(decimals=cfg.DECIMALS)
 
+
+
+def internal_behaviour(data: pd.DataFrame):
+    """Body configuration & movement"""
     
-    # body length & angle
-    data['snout-tail'] = distance(data, 'snout', 'tail1')
-    data['snout-spine1'] = distance(data, 'snout', 'spine1')
-    data['spine1-spine2'] = distance(data, 'spine1', 'spine2')
-    data['spine2-tail1'] = distance(data, 'spine2', 'tail1')
+    new = pd.DataFrame()
     
-    # (relative) angle
-    data['snout-spine1-spine2'] = utils.angle3(select_bodypart(data, 'snout'),
+    # body length
+    new['snout-tail'] = distance(data, 'snout', 'tail1')
+    new['snout-spine1'] = distance(data, 'snout', 'spine1')
+    new['spine1-spine2'] = distance(data, 'spine1', 'spine2')
+    new['spine2-tail1'] = distance(data, 'spine2', 'tail1')
+    
+    # body (relative) angle
+    new['snout-spine1-spine2'] = utils.angle3(select_bodypart(data, 'snout'),
                                                select_bodypart(data, 'spine1'),
                                                select_bodypart(data, 'spine2'))
-    data['spine1-spine2-tail1'] = utils.angle3(select_bodypart(data, 'spine1'),
+    new['spine1-spine2-tail1'] = utils.angle3(select_bodypart(data, 'spine1'),
                                                select_bodypart(data, 'spine2'),
                                                select_bodypart(data, 'tail1'))
     
+    # velocity, acceleration
+    new['v-snout'] = velocity2(data, "snout")
+    new['a-snout'] = velocity1(new, 'v-snout')
+    
+    return new
 
-    # snout to key points
-    d_cols = []
+
+
+def external_behaviour(data: pd.DataFrame):
+    """Behaviour relative to task stimuli"""
+    
+    new = pd.DataFrame()
+    
+    # orientation
+    neck = (select_bodypart(data, 'spine1') + select_bodypart(data, 'lEar') + select_bodypart(data, 'rEar')) / 3
+    h_angle = utils.absangle(select_bodypart(data, 'snout'), neck)
+    new['head_angle'] = h_angle
+    new['v-head_angle'] = get_angle_v(h_angle)
+    b_angle = utils.absangle(neck, select_bodypart(data, 'tail1'))
+    new['body_angle'] = b_angle
+    new['v-body_angle'] = get_angle_v(b_angle)
+    
+    # distance & velocity to key points
     for col in ("l_screen", "m_screen", "r_screen", "food_port"):
-        d_cols.append("snout-" + col)
-        data[d_cols[-1]] = distance(data, "snout", col)
+        new_col = "snout-"+col
+        dist = distance(data, "snout", col).values
+        new["d-"+new_col] = dist
+        new["v-"+new_col] = np.diff(dist, prepend=dist[0])
+    
+    return new
 
-    # velocity
-    v_cols = []
-    v_cols.append("v-snout")
-    data[v_cols[-1]] = velocity2(data, "snout")
-    for col in d_cols:
-        v_cols.append("v-" + col)
-        data[v_cols[-1]] = velocity1(data, col)
 
-    # acceleration
-    for col in v_cols:
-        data["a-" + col[2:]] = velocity1(data, col)
-    return data.round(decimals=cfg.DECIMALS)
+
+def make_multiindex(df: pd.DataFrame, name: str):
+    """Add a top layer index <name> to all columns in <df>"""
+    df = df.copy()
+    multi_index_level_0 = [name for col in df.columns]
+    multi_index = [multi_index_level_0, df.columns.values]
+    df.columns = pd.MultiIndex.from_arrays(multi_index)
+    return df.convert_dtypes()
 
 
 
