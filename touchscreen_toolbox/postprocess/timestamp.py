@@ -15,7 +15,7 @@ def merge(vid_info, data, timestamp_file, fps):
     
     data2 = pd.DataFrame(data.index)
     data2 = merge_info(data2, attrs)
-    data2 = merge_states(data2, states, fps=fps)
+    data2 = merge_states(data2, states, fps)
     data2 = merge_trials(data2, trials)
     
     data2 = make_multiindex(data2, 'task')
@@ -43,7 +43,7 @@ def merge_info(data, attrs):
     return data
 
 
-def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps=25):                ############# <- remember to generalize fps!
+def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps):
     """Merge state timestamp"""
     # align starting time
     states['time'] += data['frame'].iloc[0] / fps
@@ -55,6 +55,9 @@ def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps=25):             
     merged = data.reset_index().merge(states, how='left', on='frame').set_index('frame')
     merged['state_'] = merged['state'].fillna(method='ffill')
     
+    ##############
+    # TODO
+    # fix this
     try:
         merged.drop('index', axis=1, inplace=True)
     except:

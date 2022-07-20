@@ -17,14 +17,14 @@ def standardize_data(data: pd.DataFrame) -> None:
     data[cfg.YCOLS] *= -1
 
     data = replace_w_median(data, cfg.REFE)
-    data = set_origin(data, "ll_corner")
+    data = set_origin(data, "food_port")
 
     # apply transformation (rotate + scale)
-    adj = data["lr_corner_x"].iloc[0]
-    opp = -data["lr_corner_y"].iloc[0]
+    adj = data["m_screen_y"].iloc[0]
+    opp = data["m_screen_x"].iloc[0]
     hyp = utils.dist1((adj, opp))
     transformer = L_transformer(
-        cos=(adj / hyp), sin=(opp / hyp), scale=(cfg.TRAY_LENGTH / hyp)
+        cos=(adj / hyp), sin=(opp / hyp), scale=(cfg.TRAY_WIDTH / hyp)                      #### <- 
     )
     for xcol, ycol in zip(cfg.XCOLS, cfg.YCOLS):
         data[[xcol, ycol]] = transformer.transform(data[[xcol, ycol]].values)
@@ -32,6 +32,32 @@ def standardize_data(data: pd.DataFrame) -> None:
     data = fillna(data)
     
     return data.round(decimals=cfg.DECIMALS)
+
+
+# def standardize_data(data: pd.DataFrame) -> None:
+#     """Standardize pose estimation data"""
+    
+#     data = data.copy()
+    
+#     # flip
+#     data[cfg.YCOLS] *= -1
+
+#     data = replace_w_median(data, cfg.REFE)
+#     data = set_origin(data, "ll_corner")
+
+#     # apply transformation (rotate + scale)
+#     adj = data["lr_corner_x"].iloc[0]
+#     opp = -data["lr_corner_y"].iloc[0]
+#     hyp = utils.dist1((adj, opp))
+#     transformer = L_transformer(
+#         cos=(adj / hyp), sin=(opp / hyp), scale=(cfg.TRAY_LENGTH / hyp)
+#     )
+#     for xcol, ycol in zip(cfg.XCOLS, cfg.YCOLS):
+#         data[[xcol, ycol]] = transformer.transform(data[[xcol, ycol]].values)
+    
+#     data = fillna(data)
+    
+#     return data.round(decimals=cfg.DECIMALS)
 
 
 

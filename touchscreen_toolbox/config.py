@@ -3,7 +3,8 @@
 
 # magic numbers
 FPS = 25
-TRAY_LENGTH = 26.8  # (cm)
+# TRAY_LENGTH = 26.8  # (cm)
+TRAY_WIDTH = 18  # mid screen - food port
 P_CUTOFF = 0.1  # confidence threshold
 DECIMALS = 2
 
@@ -40,7 +41,7 @@ INFO_LS = [
 # preprocess
 # ------
 B_THRESHOLD = 45  # threshold for increasing brightness
-TIME_BUFFER = 10  # (sec)
+TIME_BUFFER = (0, 10)  # (sec)
 
 
 # auto generated variables
