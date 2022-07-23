@@ -5,7 +5,7 @@ import pandas as pd
 from math import pi
 from touchscreen_toolbox import utils
 from touchscreen_toolbox import config as cfg
-
+from itertools import combinations
 
 
 def engineering(data: pd.DataFrame) -> None:
@@ -24,28 +24,31 @@ def engineering(data: pd.DataFrame) -> None:
 
 def internal_behaviour(data: pd.DataFrame):
     """Body configuration & movement"""
-    
+    from itertools import combinations
     new = pd.DataFrame()
     
+    keypoints = ("snout", "spine1", "spine2", "tail1")
+    
     # body length
-    new['snout-tail'] = distance(data, 'snout', 'tail1')
-    new['snout-spine1'] = distance(data, 'snout', 'spine1')
-    new['spine1-spine2'] = distance(data, 'spine1', 'spine2')
-    new['spine2-tail1'] = distance(data, 'spine2', 'tail1')
+    for pair in list(combinations(keypoints, 2)):
+        new['-'.join(pair)] = distance(data, pair[0], pair[1])
     
     # body (relative) angle
-    new['snout-spine1-spine2'] = utils.angle3(select_bodypart(data, 'snout'),
-                                               select_bodypart(data, 'spine1'),
-                                               select_bodypart(data, 'spine2'))
-    new['spine1-spine2-tail1'] = utils.angle3(select_bodypart(data, 'spine1'),
-                                               select_bodypart(data, 'spine2'),
-                                               select_bodypart(data, 'tail1'))
+    for triplet in list(combinations(keypoints, 3)):
+        new['-'.join(triplet)] = utils.angle3(select_bodypart(data, triplet[0]),
+                                              select_bodypart(data, triplet[1]),
+                                              select_bodypart(data, triplet[2]),)
+    
+    # rate of change of above features
+    for col in new.columns:
+        new['v-'+col] = velocity1(new, col)
     
     # velocity, acceleration
-    new['v-snout'] = velocity2(data, "snout")
-    new['a-snout'] = velocity1(new, 'v-snout')
+    for point in keypoints:
+        new['v-'+point] = velocity2(data, point)
+        new['a-'+point] = velocity1(new, 'v-'+point)
     
-    return new
+    return new.round(decimals=cfg.DECIMALS)
 
 
 
@@ -70,7 +73,7 @@ def external_behaviour(data: pd.DataFrame):
         new["d-"+new_col] = dist
         new["v-"+new_col] = np.diff(dist, prepend=dist[0])
     
-    return new
+    return new.round(decimals=cfg.DECIMALS)
 
 
 
