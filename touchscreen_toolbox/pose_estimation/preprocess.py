@@ -1,13 +1,14 @@
 import os
 import cv2
+import logging
 import numpy as np
 from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
+import ffmpeg
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
-import logging
-
 logger = logging.getLogger(__name__)
+
 
 
 def preprocess_video(vid_info: dict, cut=True):
@@ -16,58 +17,43 @@ def preprocess_video(vid_info: dict, cut=True):
     """
 
     vid_info["prep"] = []  # to record preprocess applied
-
-#     if cut:
-#         cut_video(vid_info)
-
+    resolution(vid_info)
     brightness(vid_info)
 
-    # TODO: anything else?
 
 
-def cut_video(vid_info):
-    """
-    Cut video according to vid_info['time'] entry,
-    """
+# --- functions for video resolution ---
 
-    logger.info(f"Cutting '{vid_info['target_path']}'...")
-
-    # retrieve time info
-    try:
-        start, end = vid_info["time"]
-
-        # cut & save to <target_path>
-        target = add_suffix(vid_info, "_c")
-        ffmpeg_extract_subclip(vid_info["path"], start, end, targetname=target)
-
-        vid_info["prep"].append("c")
-        vid_info["target_path"] = target
-
-    except KeyError:
-        logger.warning(f"Time information not found for {vid_info['path']}")
-
-
-def brightness(vid_info):
-    """
-    Bright preprocessing using gamma correction, if video brightness is too low
-    (set brightness threshold in config)
-    """
-
+def resolution(vid_info):
+    
+    width  = cfg.RESOLUTION['width']
+    height = cfg.RESOLUTION['height']
     target_video = vid_info["target_path"]
+    probe_info = get_ffprobe_info(target_video)
+    
+    if (probe_info['height']!=height) or (probe_info['width']!=width):
+            
+        logger.info(f"Rescaling '{target_video}'...")
+        
+        vid_info["target_path"] = add_suffix(vid_info, "_r")
+        vid_info["prep"].append("r")
+        
+        resize_video(target_video, vid_info["target_path"], probe_info, width, height)
+        
 
-    # only apply preprocessing if the average brightness is lower than threshold
-    if brightness_check(target_video):
+def get_ffprobe_info(video_path):
+    """Extract video information using ffprobe"""
+    probe = ffmpeg.probe(video_path)
+    return next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
 
-        logger.info(f"Increasing brightness for '{target_video}'...")
 
-        vid_info["target_path"] = add_suffix(vid_info, "_b")
+def resize_video(video_path, output_path, probe_info, width, height):
+    """Resize video resolution"""
+    video = ffmpeg.input(video_path)
+    probe = ffmpeg.probe(video_path)
+    video.filter('scale', width=width, height=height).output(output_path, video_bitrate=probe_info['bit_rate']).run()
 
-        gamma_correction(target_video, vid_info["target_path"], gamma=0.5)
-
-        vid_info["prep"].append("b")
-
-#         os.remove(target_video)
-
+# -------
 
 def map_video(
     func,
@@ -145,6 +131,27 @@ def get_brightness(video: str):
     return dist
 
 
+def brightness(vid_info):
+    """
+    Bright preprocessing using gamma correction, if video brightness is too low
+    (set brightness threshold in config)
+    """
+
+    target_video = vid_info["target_path"]
+
+    # only apply preprocessing if the average brightness is lower than threshold
+    if brightness_check(target_video):
+
+        logger.info(f"Increasing brightness for '{target_video}'...")
+
+        vid_info["target_path"] = add_suffix(vid_info, "_b")
+
+        gamma_correction(target_video, vid_info["target_path"], gamma=0.5)
+
+        vid_info["prep"].append("b")
+
+
+
 # functions for gamma correction
 def get_gamma_table(gamma: float):
     gamma_table = np.power(np.arange(256) / 255, gamma) * 255
@@ -179,3 +186,24 @@ def add_suffix(vid_info, suffix):
         + suffix
         + vid_info["format"]
     )
+
+def cut_video(vid_info):
+    """
+    Cut video according to vid_info['time'] entry,
+    """
+
+    logger.info(f"Cutting '{vid_info['target_path']}'...")
+
+    # retrieve time info
+    try:
+        start, end = vid_info["time"]
+
+        # cut & save to <target_path>
+        target = add_suffix(vid_info, "_c")
+        ffmpeg_extract_subclip(vid_info["path"], start, end, targetname=target)
+
+        vid_info["prep"].append("c")
+        vid_info["target_path"] = target
+
+    except KeyError:
+        logger.warning(f"Time information not found for {vid_info['path']}")

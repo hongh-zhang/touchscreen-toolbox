@@ -7,6 +7,7 @@ FPS = 25
 TRAY_WIDTH = 18  # mid screen - food port
 P_CUTOFF = 0.1  # confidence threshold
 DECIMALS = 2
+RESOLUTION = {'height': 480, 'width': 640}
 
 # keypoints
 MICE = ("snout", "lEar", "rEar", "spine1", "spine2", "tail1", "tail2", "tail3")
