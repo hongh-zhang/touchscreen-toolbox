@@ -114,8 +114,9 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> None:
     times = pd.read_csv(time_file).set_index(["id", "date"])
     video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
 
-    start = min(0, video_time["vid_start"] + buffer[0])
-    end = max(vid_info['length'], video_time["vid_end"] + buffer[1])
+    start = max(0, video_time["vid_start"] + buffer[0])
+    end = min(vid_info['length'], video_time["vid_end"] + buffer[1])
+    assert start < end
 
     vid_info["time"] = (start, end)
 

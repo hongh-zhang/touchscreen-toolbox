@@ -8,6 +8,10 @@ import touchscreen_toolbox.config as cfg
 from .feature import make_multiindex
 
 
+state_mapping = {1:1, 2:1, 3:2, 4:2, 5:2, 6:3, 7:4, 8:5, 9:6, 0:0, 10:0, 99:0}
+
+
+
 def merge(vid_info, data, timestamp_file, fps):
     """Merge information from touchscreen to pose estimation data"""
     
@@ -54,6 +58,9 @@ def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps):
     states = states.set_index('frame')
     merged = data.reset_index().merge(states, how='left', on='frame').set_index('frame')
     merged['state_'] = merged['state'].fillna(method='ffill')
+
+    ## simplify state_ (###harcoded###)
+    merged['state_'] = merged['state_'].replace(state_mapping)
     
     ##############
     # TODO
