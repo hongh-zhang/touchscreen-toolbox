@@ -4,10 +4,18 @@ import touchscreen_toolbox.config as cfg
 
 
 def absmin(x1, x2):
-    """Absolute minimum from 2 1D sequences"""
+    """Absolute minimum from two 1D sequences"""
     a1 = np.abs(x1)
     a2 = np.abs(x2)
     idx = (a1 < a2).astype(int)
+    return x1 * idx + x2 * (1 - idx)
+
+
+def absmax(x1, x2):
+    """Absolute maximum"""
+    a1 = np.abs(x1)
+    a2 = np.abs(x2)
+    idx = (a1 > a2).astype(int)
     return x1 * idx + x2 * (1 - idx)
 
 

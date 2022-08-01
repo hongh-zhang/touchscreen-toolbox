@@ -1,9 +1,10 @@
 *.ipynb
-*.csv
 
 # test folder
 tests/
 notebooks/
+*.csv
+*.mp4
 
 # log files
 *.txt

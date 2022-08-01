@@ -1,3 +1,13 @@
+# scripts for feature engineering
+
+# abbreviations:
+# 'd': distance
+# 'v': velocity
+# 'a': acceleration
+# 'ang': angle
+# 'angv': angular velocity
+
+
 import os
 import sys
 import numpy as np
@@ -31,18 +41,18 @@ def internal_behaviour(data: pd.DataFrame):
     
     # body length
     for pair in list(combinations(keypoints, 2)):
-        new['-'.join(pair)] = distance(data, pair[0], pair[1])
+        pair_name = '-'.join(pair)
+        new['d-'+pair_name] = get_distance(data, pair[0], pair[1])
+        new['v-'+pair_name] = velocity1(new, 'd-'+pair_name)
     
     # body (relative) angle
     for triplet in list(combinations(keypoints, 3)):
-        new['-'.join(triplet)] = utils.angle3(select_bodypart(data, triplet[0]),
+        trip_name = '-'.join(triplet)
+        new['ang-'+trip_name] = utils.angle3(select_bodypart(data, triplet[0]),
                                               select_bodypart(data, triplet[1]),
-                                              select_bodypart(data, triplet[2]),)
-    
-    # rate of change of above features
-    for col in new.columns:
-        new['v-'+col] = velocity1(new, col)
-    
+                                              select_bodypart(data, triplet[2]))
+        new['angv-'+trip_name] = velocity1(new, 'ang-'+trip_name)
+
     # velocity, acceleration
     for point in keypoints:
         new['v-'+point] = velocity2(data, point)
@@ -60,18 +70,33 @@ def external_behaviour(data: pd.DataFrame):
     # orientation
     neck = (select_bodypart(data, 'spine1') + select_bodypart(data, 'lEar') + select_bodypart(data, 'rEar')) / 3
     h_angle = utils.absangle(select_bodypart(data, 'snout'), neck)
-    new['head_angle'] = h_angle
-    new['v-head_angle'] = get_angle_v(h_angle)
-    b_angle = utils.absangle(neck, select_bodypart(data, 'tail1'))
-    new['body_angle'] = b_angle
-    new['v-body_angle'] = get_angle_v(b_angle)
+    new['head_ang'] = h_angle
+    new['head_angv'] = get_angv(h_angle)
     
-    # distance & velocity to key points
+    #  relative to key points
     for col in ("l_screen", "m_screen", "r_screen", "food_port"):
         new_col = "snout-"+col
-        dist = distance(data, "snout", col).values
+
+        # distance & velocity
+        dist = get_distance(data, "snout", col).values
         new["d-"+new_col] = dist
         new["v-"+new_col] = np.diff(dist, prepend=dist[0])
+
+
+        # relative angle to the target (snout-neck-screen/port)
+        angle = utils.angle3(select_bodypart(data, 'snout'),
+                             neck,
+                             select_bodypart(data, col))
+        new['ang-'+new_col] = angle
+
+        # angular velocity relative to the target
+        angv = get_angv(angle)
+        
+        # reverse the sign if angle < 180
+        # so that a positive number means getting closer to 0 degrees (orienting towards the target)
+        # negative means getting closer to 180 degrees (orienting away from the target)
+        angv = angv * (angle>180).astype(int) + -angv * (angle<180).astype(int)
+        new['angv-'+new_col] = angv
     
     return new.round(decimals=cfg.DECIMALS)
 
@@ -89,7 +114,7 @@ def make_multiindex(df: pd.DataFrame, name: str):
 
 # helpers
 # -------
-def distance(data: pd.DataFrame, pt1: str, pt2: str):
+def get_distance(data: pd.DataFrame, pt1: str, pt2: str):
     """Distance between a pair of keypoints"""
     dx = data[pt1 + "_x"] - data[pt2 + "_x"]
     dy = data[pt1 + "_y"] - data[pt2 + "_y"]
@@ -113,9 +138,14 @@ def select_bodypart(data, bodypart):
     return data[[bodypart+'_x', bodypart+'_y']].values
 
 
-def get_angle_v(angles: pd.DataFrame):
+def get_angv(angles: pd.DataFrame):
     """Continuous angular velocity"""
-    angles2 = (angles<180).astype(int) * 180 + angles  # ~[180, 540] for continuity
-    v_angles =  utils.absmin(np.diff(angles, prepend=angles[0]), 
-                             np.diff(angles2, prepend=angles2[0]))
-    return v_angles
+    
+    # raw velocity
+    # range ~ [-360, 360]
+    angv =  np.diff(angles, prepend=angles[0])
+    
+    # continuouts velocity
+    # if angv is outside [-180,180], plus/minus 360 to map into [-180,180]
+    angv -= (np.abs(angv) > 180).astype(int) * 360 * ((angv > 0).astype(int)*2 - 1)
+    return angv
