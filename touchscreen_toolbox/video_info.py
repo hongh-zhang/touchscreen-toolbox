@@ -23,6 +23,7 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
         "vid_name": os.path.splitext(os.path.basename(video_path))[0],
         "format": os.path.splitext(os.path.basename(video_path))[1],
     }
+    
     vid_info["save_path"] = (
         os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]) + ".pickle"
     )
@@ -39,9 +40,10 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
         
         vid_info["length"] = get_vid_len(video_path)
         vid_info["fps"] = get_vid_fps(video_path)
-        if time_file:
-            get_time(vid_info, time_file)
-            vid_info['frames'] = [int(i * cfg.FPS) for i in vid_info['time']]
+
+    if time_file:
+        get_time(vid_info, time_file)
+        vid_info['frames'] = [int(i * cfg.FPS) for i in vid_info['time']]
 
     return vid_info
 
