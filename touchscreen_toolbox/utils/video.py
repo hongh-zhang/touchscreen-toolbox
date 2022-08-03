@@ -63,11 +63,11 @@ def text_writer(data, col, position=(0,0)):
     """
     
     data = data[col]
-    frame_head = data.index[0]
+    frame_start_end = (data.index[0], data.index[-1])
     
     def func(frame, count):
         
-        if count < frame_head:
+        if count < frame_start_end[0] or count > frame_start_end[-1]:
             return frame
         
         # read text from dataframe

@@ -42,7 +42,7 @@ INFO_LS = [
 # preprocess
 # ------
 B_THRESHOLD = 45  # threshold for increasing brightness
-TIME_BUFFER = (0, 10)  # (sec)
+TIME_BUFFER = (-1, 10)  # (sec)
 
 
 # auto generated variables

@@ -19,7 +19,7 @@ def merge(vid_info, data, timestamp_file, fps):
     
     data2 = pd.DataFrame(data.index)
     data2 = merge_info(data2, attrs)
-    data2 = merge_states(data2, states, fps)
+    data2 = merge_states(data2, states, vid_info)
     data2 = merge_trials(data2, trials)
     
     data2 = make_multiindex(data2, 'task')
@@ -47,11 +47,11 @@ def merge_info(data, attrs):
     return data
 
 
-def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps):
+def merge_states(data: pd.DataFrame, states: pd.DataFrame, vid_info: dict):
     """Merge state timestamp"""
     # align starting time
-    states['time'] += data['frame'].iloc[0] / fps
-    states['frame'] = (states['time'] * fps).astype(int)
+    states['time'] += vid_info['time'][0] - cfg.TIME_BUFFER[0]
+    states['frame'] = (states['time'] * vid_info['fps']).astype(int)
     states = states.drop('time', axis=1)
     
     increment_duplicates(states, 'frame')
@@ -72,6 +72,7 @@ def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps):
     
     # count trial numbers
     merged = count_trials(merged)
+    merged = merged.fillna(np.nan)
 
     return merged.convert_dtypes()
 
@@ -79,7 +80,7 @@ def merge_states(data: pd.DataFrame, states: pd.DataFrame, fps):
 def count_trials(data: pd.DataFrame):
     """Count trial number"""
     data = data.copy()
-    data['trial'] = np.NaN
+    data['trial'] = np.nan
     idxs = data.index[data['state'].fillna(0)==1]
     for idx, i in zip(idxs, np.arange(len(idxs))):
         data.loc[idx, 'trial'] = i+1

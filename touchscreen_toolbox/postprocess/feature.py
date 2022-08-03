@@ -25,11 +25,10 @@ def engineering(data: pd.DataFrame) -> None:
     external = external_behaviour(data).set_index(data.index)
     
     data = pd.concat([make_multiindex(data, 'coordinate'),
-               make_multiindex(internal, 'internal'),
-               make_multiindex(external, 'external')], axis=1)
+                      make_multiindex(internal, 'internal'),
+                      make_multiindex(external, 'external')], axis=1)
     
     return data.round(decimals=cfg.DECIMALS)
-
 
 
 def internal_behaviour(data: pd.DataFrame):
@@ -59,7 +58,6 @@ def internal_behaviour(data: pd.DataFrame):
         new['a-'+point] = velocity1(new, 'v-'+point)
     
     return new.round(decimals=cfg.DECIMALS)
-
 
 
 def external_behaviour(data: pd.DataFrame):

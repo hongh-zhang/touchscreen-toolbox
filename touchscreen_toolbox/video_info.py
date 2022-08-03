@@ -2,6 +2,7 @@ import os
 import re
 import cv2
 import logging
+import numpy as np
 import pandas as pd
 from moviepy.editor import VideoFileClip
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = False):
+def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = False, verbose: bool = True):
     """Get dictionary of video information from <video_path>"""
 
     vid_info = {
@@ -31,7 +32,8 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
     # read saved info
     if os.path.exists(vid_info["save_path"]) and (not overwrite):
         vid_info = load_info(vid_info)
-        logger.info(f"Loaded existing {vid_info['save_path']}")
+        if verbose:
+            logger.info(f"Loaded existing {vid_info['save_path']}")
 
     else:
         # deconstruct information in video name
@@ -143,8 +145,14 @@ def export_info(vid_info: dict) -> list:
     return val_ls
 
 
-def save_data(vid_info: dict, data: pd.DataFrame):
-    """Save data to result folder"""
-    data.to_csv(
-        os.path.join(vid_info["dir"], cfg.RST_FOLDER, vid_info["vid_name"] + ".csv")
-    )
+def save_data(vid_info: dict, data: pd.DataFrame, csv: bool=True) -> None:
+    """Save data to result folder, default in hd5f format"""
+    save_path = os.path.join(cfg.RST_FOLDER, vid_info["vid_name"])
+    if csv:
+        save_path += ".csv"
+        data.to_csv(os.path.join(vid_info["dir"], save_path))
+    else:
+        save_path += ".h5"
+        h5key = vid_info['mouse_id'] + '-' + vid_info['exp_date']
+        data.astype(float).replace({pd.NA: np.nan}).to_hdf(os.path.join(vid_info["dir"], save_path), h5key)  #<- TODO: fix this stupid type conversion
+    vid_info['post_result'] = save_path
