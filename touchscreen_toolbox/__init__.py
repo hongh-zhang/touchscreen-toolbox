@@ -1,6 +1,7 @@
 import sys
 import logging
 from .core import *
+from .export import export
 from .video_info import *
 from . import utils
 from . import postprocess
