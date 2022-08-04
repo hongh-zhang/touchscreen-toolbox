@@ -1,6 +1,7 @@
 import os
 import re
 import cv2
+import json
 import logging
 import numpy as np
 import pandas as pd
@@ -128,14 +129,17 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> None:
 def save_info(vid_info: dict) -> None:
     """Save vid info to the INFO child folder"""
 
-    file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"])
-    io.pickle_save(vid_info, file_path + ".pickle")
-
-
+    file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]+'.json')
+    with open(file_path, 'w') as f:
+        json.dump(vid_info, f, indent=4, sort_keys=True)
+        
 def load_info(vid_info: dict) -> None:
-    """Load saved vid_info from pickle, updates file path if changed"""
-    file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"])
-    saved = io.pickle_load(file_path + ".pickle")
+    """Load saved vid_info from json, updates file path if changed"""
+    
+    file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]+'.json')
+    with open(file_path, 'r') as f:
+        saved = json.load(f)
+    
     saved.update(vid_info)
     return saved
 
