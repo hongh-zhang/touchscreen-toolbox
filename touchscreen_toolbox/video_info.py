@@ -27,7 +27,7 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
     }
     
     vid_info["save_path"] = (
-        os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]) + ".pickle"
+        os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]) + ".json"
     )
 
     # read saved info

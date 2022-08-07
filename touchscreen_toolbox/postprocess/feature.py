@@ -85,15 +85,16 @@ def external_behaviour(data: pd.DataFrame):
         angle = utils.angle3(select_bodypart(data, 'snout'),
                              neck,
                              select_bodypart(data, col))
+        angle -= (angle>180).astype(int) * (360) # -> [-180, 180]
         new['ang-'+new_col] = angle
 
         # angular velocity relative to the target
         angv = get_angv(angle)
         
-        # reverse the sign if angle < 180
-        # so that a positive number means getting closer to 0 degrees (orienting towards the target)
-        # negative means getting closer to 180 degrees (orienting away from the target)
-        angv = angv * (angle>180).astype(int) + -angv * (angle<180).astype(int)
+        # reverse the sign of angv if angle > 0
+        # so that a positive angv means getting closer to 0 degrees (orienting towards the target)
+        # negative means getting closer to (+/-)180 degrees (orienting away from the target)
+        angv = -angv * (angle>0).astype(int) + angv * (angle<0).astype(int)
         new['angv-'+new_col] = angv
     
     return new.round(decimals=cfg.DECIMALS)

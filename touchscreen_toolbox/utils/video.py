@@ -55,7 +55,7 @@ def map_video(
 
 
 
-def text_writer(data, col, position=(0,0)):
+def text_writer(data, col, position=(0,0), fontScale=1):
     """
     Blahblahblah
     
@@ -74,12 +74,12 @@ def text_writer(data, col, position=(0,0)):
         text = f"{col}: {data.loc[count]}"
         
         # calculate text size and set position
-        text_size = cv2.getTextSize(text=text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=2, thickness=2)
+        text_size = cv2.getTextSize(text=text, fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=fontScale, thickness=1)
         height = text_size[0][1]
         position2 = (position[0], int(position[1]+height*1.5))
         
         # write
-        frame = cv2.putText(frame, text, position2, cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255), 2)
+        frame = cv2.putText(frame, text, position2, cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0,0,255), 1)
         return frame
     
     return func

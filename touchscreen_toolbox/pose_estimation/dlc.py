@@ -38,7 +38,7 @@ def dlc_analyze(vid_info: dict, verbose: bool = False) -> None:
     vid_info["result"] = csv
 
 
-def cleanup(vid_info: dict) -> None:
+def cleanup(vid_info: dict) -> None:                            # TODO:  enter/exit to cover all files (e.g. _r.mp4)
     """Relocate pose estimation files into the DLC folder"""
 
     # relocate
