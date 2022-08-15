@@ -38,10 +38,17 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
 
     postprocess.record_stats(folder_path)
 
-
+def posed(vid_info, force_pose=False):
+    return (('result' in vid_info) or force_pose)
 
 def analyze_video(
-    video_path: str, pose: bool = False, post: bool = False, time_file: str = False, timestamps: str = False, raise_exception: bool = False
+    video_path: str, 
+    pose: bool = False, 
+    post: bool = False, 
+    time_file: str = False, 
+    timestamps: str = False, 
+    raise_exception: bool = False,
+    force_pose: bool = False
 ) -> None:
     """
     Analyze a video
@@ -54,11 +61,12 @@ def analyze_video(
 
         # pose estimate
         if pose:
-            logger.info("Pose estimating...")
-            pe.preprocess_video(vid_info)
-            pe.dlc_analyze(vid_info)
-            pe.cleanup(vid_info)
-            video_info.save_info(vid_info)
+            if not posed(vid_info, force_pose=force_pose):
+                logger.info("Pose estimating...")
+                pe.preprocess_video(vid_info)
+                pe.dlc_analyze(vid_info)
+                pe.cleanup(vid_info)
+                video_info.save_info(vid_info)
 
         # postprocess
         if post:

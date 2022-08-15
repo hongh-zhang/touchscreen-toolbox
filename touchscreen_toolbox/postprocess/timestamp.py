@@ -60,7 +60,7 @@ def merge_states(data: pd.DataFrame, states: pd.DataFrame, vid_info: dict):
     merged['state_'] = merged['state'].fillna(method='ffill')
 
     ## simplify state_ (###harcoded###)
-    merged['state_'] = merged['state_'].replace(state_mapping)
+    merged['state_'] = merged['state_'].replace(state_mapping).fillna(0)
     
     ##############
     # TODO
