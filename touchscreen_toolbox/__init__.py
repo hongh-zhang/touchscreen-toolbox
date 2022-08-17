@@ -12,9 +12,9 @@ logger.setLevel(logging.DEBUG)
 
 file_handler = logging.FileHandler(filename="log.log")
 erro_handler = logging.FileHandler(filename="err.log")
-erro_handler.setLevel(40)
+erro_handler.setLevel(30)
 stdout_handler = logging.StreamHandler(sys.stdout)
-stdout_handler.setLevel(20)
+stdout_handler.setLevel(10)
 
 formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(name)s : %(message)s")
 file_handler.setFormatter(formatter)

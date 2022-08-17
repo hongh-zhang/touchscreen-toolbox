@@ -43,12 +43,16 @@ def record_stats(folder_path: str):
     for file in utils.listdir(info_folder):
 
         # get analyze output for the video
-        vid_info = utils.pickle_load(os.path.join(info_folder, file))
+        vid_info = video_info.load_info(os.path.join(info_folder, file))
         csv_file = os.path.join(folder_path, vid_info["result"])
 
         # get data
         info = video_info.export_info(vid_info)
-        stats = get_stats(read_dlc_csv(vid_info))
+        try:
+            stats = read_dlc_csv(vid_info)
+        except:  # skip files without timestamp
+            continue
+        stats = get_stats(stats)
         values.append(info + stats)
 
     # save

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = False, verbose: bool = True):
+def get_vid_info(video_path: str, overwrite: bool = False, verbose: bool = True):
     """Get dictionary of video information from <video_path>"""
 
     vid_info = {
@@ -34,7 +34,7 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
     if os.path.exists(vid_info["save_path"]) and (not overwrite):
         vid_info = load_info(vid_info)
         if verbose:
-            logger.info(f"Loaded existing {vid_info['save_path']}")
+            logger.info(f"Loaded existing info from {vid_info['save_path']}")
 
     else:
         # deconstruct information in video name
@@ -43,10 +43,6 @@ def get_vid_info(video_path: str, overwrite: bool = False, time_file: str = Fals
         
         vid_info["length"] = get_vid_len(video_path)
         vid_info["fps"] = get_vid_fps(video_path)
-
-    if time_file:
-        get_time(vid_info, time_file)
-        vid_info['frames'] = [int(i * cfg.FPS) for i in vid_info['time']]
 
     return vid_info
 
@@ -99,7 +95,7 @@ def get_vid_fps(video_path):
     return fps
 
 
-def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> None:
+def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> bool:
     """
     Get time to cut video from <time_file>
 
@@ -115,15 +111,23 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> None:
     start, end: float
         time (in sec) to cut video
     """
+    
+    try:
+        times = pd.read_csv(time_file).set_index(["id", "date"])
+        video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
 
-    times = pd.read_csv(time_file).set_index(["id", "date"])
-    video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
+        start = max(0, video_time["vid_start"] + buffer[0])
+        end = min(vid_info['length'], video_time["vid_end"] + buffer[1])
+        assert start < end
 
-    start = max(0, video_time["vid_start"] + buffer[0])
-    end = min(vid_info['length'], video_time["vid_end"] + buffer[1])
-    assert start < end
+        vid_info["time"] = (start, end)
+        vid_info['frames'] = (round(start * vid_info['fps']),
+                              round(end * vid_info['fps']))
 
-    vid_info["time"] = (start, end)
+        return True
+    
+    except KeyError:  # when the id-date pair is not found in timefile
+        return False
 
 
 def save_info(vid_info: dict) -> None:
@@ -133,14 +137,21 @@ def save_info(vid_info: dict) -> None:
     with open(file_path, 'w') as f:
         json.dump(vid_info, f, indent=4, sort_keys=True)
         
-def load_info(vid_info: dict) -> None:
+def load_info(vid_info) -> None:
     """Load saved vid_info from json, updates file path if changed"""
     
-    file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]+'.json')
+    if type(vid_info) == dict:
+        file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]+'.json')
+    elif type(vid_info) == str:
+        file_path = vid_info
+    else:
+        raise TypeError("Invalid input type - accept either string or dictionary")
+        
     with open(file_path, 'r') as f:
         saved = json.load(f)
     
-    saved.update(vid_info)
+    if type(vid_info) == dict:
+        saved.update(vid_info)
     return saved
 
 
