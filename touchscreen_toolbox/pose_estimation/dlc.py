@@ -1,10 +1,10 @@
 # Scripts to integrate DeepLabCut
 
 import os
-import sys
 import logging
 import pandas as pd
 import deeplabcut as dlc
+from typing import Union
 import touchscreen_toolbox.utils as utils
 import touchscreen_toolbox.config as cfg
 
@@ -12,13 +12,12 @@ logger = logging.getLogger(__name__)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
-def analyze(vid_info: dict, *args, **kwargs) -> None:
-
-    dlc_analyze(vid_info, *args, **kwargs)
+def analyze(vid_info: dict) -> None:
+    dlc_analyze(vid_info)
     cleanup(vid_info)
 
 
-def dlc_analyze(vid_info: dict, verbose: bool = False) -> None:
+def dlc_analyze(vid_info: dict) -> None:
     """Call DLC to analyze video"""
 
     if "files" in vid_info and "result" in vid_info:
@@ -38,7 +37,7 @@ def dlc_analyze(vid_info: dict, verbose: bool = False) -> None:
     vid_info["result"] = csv
 
 
-def cleanup(vid_info: dict) -> None:                            # TODO:  enter/exit to cover all files (e.g. _r.mp4)
+def cleanup(vid_info: dict) -> None:  # TODO:  enter/exit to cover all files (e.g. _r.mp4)
     """Relocate pose estimation files into the DLC folder"""
 
     # relocate
@@ -65,24 +64,25 @@ def cleanup(vid_info: dict) -> None:                            # TODO:  enter/e
 #     move_files(files, dlc_folder, folder_path)
 
 #     # label
-#     # dlc somehow doesnt recognize relative path
-#     dlc.create_labeled_video(DLC_CONFIG, os.path.abspath(video_path), videotype='mp4', save_frames = False, filtered=True)
+#     # dlc somehow doesn't recognize relative path
+#     dlc.create_labeled_video(DLC_CONFIG, os.path.abspath(video_path),
+#                              videotype='mp4', save_frames = False, filtered=True)
 
 #     # move back files
 #     move_files(files, folder_path, dlc_folder)
 
 
-def read_dlc_csv(path: str, frames: tuple=None) -> pd.DataFrame:
+def read_dlc_csv(path: Union[str, dict], frames: tuple = None) -> pd.DataFrame:
     """
     Read pose estimation result produced by DLC
     """
     if type(path) == dict:  # vid_info
         return read_dlc_csv(os.path.join(path["dir"], path["result"]), path['frames'])
     elif type(path) == str:  # csv path
-        data = pd.read_csv(path, 
-                           skiprows=[0, 1, 2, 3], 
+        data = pd.read_csv(path,
+                           skiprows=[0, 1, 2, 3],
                            names=(["frame"] + cfg.HEADERS)
-               ).set_index("frame")
+                           ).set_index("frame")
         if frames is not None:
             return data.iloc[frames[0]:frames[1], :]
         else:

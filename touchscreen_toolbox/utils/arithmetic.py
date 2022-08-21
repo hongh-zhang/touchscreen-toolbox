@@ -34,7 +34,7 @@ def dist2(point1, point2):
 # angles
 # ------
 def convert_angles(angles, radians: bool):
-    """Convert range of angles from [-pi, pi] to [0, 2pi] + optional degree conversion""" 
+    """Convert range of angles from [-pi, pi] to [0, 2pi] + optional degree conversion"""
     angles += (angles < 0).astype(int) * 2 * pi
     if not radians:
         angles *= 180 / pi
@@ -43,13 +43,13 @@ def convert_angles(angles, radians: bool):
 
 def angle1(v, radians=False):
     """Angle between vector <v> and horizontal axis"""
-    angles = np.arctan2(v[:,1], v[:,0])
+    angles = np.arctan2(v[:, 1], v[:, 0])
     return convert_angles(angles, radians)
 
 
 def angle2(v, u, radians=False):
     """Relative angle between two vectors <v> & <u> with respect to the origin"""
-    angles = np.arctan2(u[:,1], u[:,0]) - np.arctan2(v[:,1], v[:,0])
+    angles = np.arctan2(u[:, 1], u[:, 0]) - np.arctan2(v[:, 1], v[:, 0])
     return convert_angles(angles, radians)
 
 
@@ -63,7 +63,7 @@ def angle3(pts1, pts2, pts3, radians=False):
 def absangle(v, u, radians=False):
     """Absolute angle, defined as the angle between pt1, pt2, horizontal axis"""
     w = v - u
-    angles = np.arctan2(w[:,1], w[:,0])
+    angles = np.arctan2(w[:, 1], w[:, 0])
     return convert_angles(angles, radians)
 
 

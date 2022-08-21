@@ -8,7 +8,7 @@ import touchscreen_toolbox.utils as utils
 
 
 
-def standardize_data(data: pd.DataFrame) -> None:
+def standardize_data(data: pd.DataFrame) -> pd.DataFrame:
     """Standardize pose estimation data"""
     
     data = data.copy()
@@ -72,7 +72,7 @@ def replace_w_median(data: pd.DataFrame, columns: list):
 
 
 def set_origin(data: pd.DataFrame, col: str):
-    """Set the [col] as origin for all coordiantes"""
+    """Set the [col] as origin for all coordinates"""
     
     data = data.copy()
     
@@ -93,8 +93,8 @@ class L_transformer:
         self.scale = scale
         self.rotation = np.array([[cos, -sin], [sin, cos]])
 
-    def transform(self, X):
-        return np.dot(self.rotation, X.T).T * self.scale
+    def transform(self, x):
+        return np.dot(self.rotation, x.T).T * self.scale
 
 
 def fillna(data: pd.DataFrame):
@@ -119,7 +119,7 @@ def fillna(data: pd.DataFrame):
                 # add to temp list if the element is consecutive
                 if i - temp[-1] == 1:
                     temp.append(i)
-                # if the element is not consevutive,
+                # if the element is not consecutive,
                 # complete the current group and reset temp list
                 else:
                     groups.append(temp)

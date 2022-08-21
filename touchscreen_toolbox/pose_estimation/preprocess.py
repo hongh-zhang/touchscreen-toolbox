@@ -2,7 +2,6 @@ import os
 import cv2
 import logging
 import numpy as np
-from touchscreen_toolbox import utils
 import touchscreen_toolbox.config as cfg
 import ffmpeg
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
@@ -10,10 +9,9 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 logger = logging.getLogger(__name__)
 
 
-
-def preprocess_video(vid_info: dict, cut=True):
+def preprocess_video(vid_info: dict):
     """
-    Check video quality and apply preprocess if required,
+    Check video quality then apply preprocessing if required,
     """
 
     vid_info["prep"] = []  # to record preprocess applied
@@ -21,25 +19,22 @@ def preprocess_video(vid_info: dict, cut=True):
     brightness(vid_info)
 
 
-
 # --- functions for video resolution ---
 
 def resolution(vid_info):
-    
-    width  = cfg.RESOLUTION['width']
+    width = cfg.RESOLUTION['width']
     height = cfg.RESOLUTION['height']
     target_video = vid_info["target_path"]
     probe_info = get_ffprobe_info(target_video)
-    
-    if (probe_info['height']!=height) or (probe_info['width']!=width):
-            
+
+    if (probe_info['height'] != height) or (probe_info['width'] != width):
         logger.info(f"Rescaling '{target_video}'...")
-        
+
         vid_info["target_path"] = add_suffix(vid_info, "_r")
         vid_info["prep"].append("r")
-        
+
         resize_video(target_video, vid_info["target_path"], probe_info, width, height)
-        
+
 
 def get_ffprobe_info(video_path):
     """Extract video information using ffprobe"""
@@ -50,18 +45,19 @@ def get_ffprobe_info(video_path):
 def resize_video(video_path, output_path, probe_info, width, height):
     """Resize video resolution"""
     video = ffmpeg.input(video_path)
-    probe = ffmpeg.probe(video_path)
+    # probe = ffmpeg.probe(video_path)
     video.filter('scale', width=width, height=height).output(output_path, video_bitrate=probe_info['bit_rate']).run()
+
 
 # -------
 
 def map_video(
-    func,
-    video_in: str,
-    video_out: str,
-    fourcc: str = "mp4v",
-    fps: int = 25,
-    dim=(640, 480),
+        func,
+        video_in: str,
+        video_out: str,
+        fourcc: str = "mp4v",
+        fps: int = 25,
+        dim=(640, 480),
 ):
     """
     Map video with the given [func]
@@ -78,6 +74,7 @@ def map_video(
         function to be mapped to each frame
 
     """
+
     try:
         # initialize opencv
         cap = cv2.VideoCapture(video_in)
@@ -97,8 +94,11 @@ def map_video(
         raise exc
     # release file before terminating
     finally:
-        cap.release()
-        writer.release()
+        try:
+            cap.release()
+            writer.release()
+        except NameError:
+            pass
 
 
 def lut(frame, lut_table):
@@ -110,13 +110,13 @@ def lut(frame, lut_table):
 
 FRAME2READ = 5
 
+
 # functions for checking brightness
 def brightness_check(video: str):
     return np.median(get_brightness(video)) <= cfg.B_THRESHOLD
 
 
 def get_brightness(video: str):
-
     # read 1st frame
     cap = cv2.VideoCapture(video)
     for _ in range(FRAME2READ):
@@ -141,7 +141,6 @@ def brightness(vid_info):
 
     # only apply preprocessing if the average brightness is lower than threshold
     if brightness_check(target_video):
-
         logger.info(f"Increasing brightness for '{target_video}'...")
 
         vid_info["target_path"] = add_suffix(vid_info, "_b")
@@ -149,7 +148,6 @@ def brightness(vid_info):
         gamma_correction(target_video, vid_info["target_path"], gamma=0.5)
 
         vid_info["prep"].append("b")
-
 
 
 # functions for gamma correction
@@ -172,20 +170,21 @@ def gamma_correction(video_in: str, video_out: str, gamma: float = 0.5):
 
 # ---------------------------------------------------------
 
-P_SUFIXX = ["_b.mp4", "_c.mp4"]  # possible preprocessed video suffix
+P_SUFFIX = ["_b.mp4", "_c.mp4"]  # possible preprocessed video suffix
 
 
 def is_preprocess(name):
-    return np.any([name.endswith(suffix) for suffix in P_SUFIXX])
+    return np.any([name.endswith(suffix) for suffix in P_SUFFIX])
 
 
 def add_suffix(vid_info, suffix):
     """Add suffix (from preprocessing) to target video path"""
     return (
-        vid_info["target_path"][: -len(vid_info["format"])]
-        + suffix
-        + vid_info["format"]
+            vid_info["target_path"][: -len(vid_info["format"])]
+            + suffix
+            + vid_info["format"]
     )
+
 
 def cut_video(vid_info):
     """

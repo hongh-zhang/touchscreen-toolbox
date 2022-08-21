@@ -44,7 +44,6 @@ def record_stats(folder_path: str):
 
         # get analyze output for the video
         vid_info = video_info.load_info(os.path.join(info_folder, file))
-        csv_file = os.path.join(folder_path, vid_info["result"])
 
         # get data
         info = video_info.export_info(vid_info)

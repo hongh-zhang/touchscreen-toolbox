@@ -5,9 +5,9 @@ import json
 import logging
 import numpy as np
 import pandas as pd
+from typing import Union
 from moviepy.editor import VideoFileClip
 
-from .utils import io
 from . import config as cfg
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def decode_name(video_name: str):
     Returns
     -------
     success: bool
-        whether the operation succeded
+        whether the operation succeeded
 
     vid_info: dict
         dictionary of video information to be accessed by other functions
@@ -106,6 +106,9 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> bool:
     time_file: str
         path to time file
 
+    buffer: tuple[float]
+        time buffer applied before cropping results(in seconds)
+
     Returns
     ------
     start, end: float
@@ -126,7 +129,7 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> bool:
 
         return True
     
-    except KeyError:  # when the id-date pair is not found in timefile
+    except KeyError:  # when the id-date pair is not found in time_file
         return False
 
 
@@ -136,8 +139,9 @@ def save_info(vid_info: dict) -> None:
     file_path = os.path.join(vid_info["dir"], cfg.INF_FOLDER, vid_info["vid_name"]+'.json')
     with open(file_path, 'w') as f:
         json.dump(vid_info, f, indent=4, sort_keys=True)
-        
-def load_info(vid_info) -> None:
+
+
+def load_info(vid_info: Union[str, dict]) -> dict:
     """Load saved vid_info from json, updates file path if changed"""
     
     if type(vid_info) == dict:
@@ -160,7 +164,7 @@ def export_info(vid_info: dict) -> list:
     return val_ls
 
 
-def save_data(vid_info: dict, data: pd.DataFrame, csv: bool=True) -> None:
+def save_data(vid_info: dict, data: pd.DataFrame, csv: bool = True) -> None:
     """Save data to result folder, default in hd5f format"""
     save_path = os.path.join(cfg.RST_FOLDER, vid_info["vid_name"])
     if csv:
@@ -169,5 +173,5 @@ def save_data(vid_info: dict, data: pd.DataFrame, csv: bool=True) -> None:
     else:
         save_path += ".h5"
         h5key = vid_info['mouse_id'] + '-' + vid_info['exp_date']
-        data.astype(float).replace({pd.NA: np.nan}).to_hdf(os.path.join(vid_info["dir"], save_path), h5key)  #<- TODO: fix this stupid type conversion
+        data.astype(float).replace({pd.NA: np.nan}).to_hdf(os.path.join(vid_info["dir"], save_path), h5key)  # <- TODO: fix this stupid type conversion
     vid_info['post_result'] = save_path

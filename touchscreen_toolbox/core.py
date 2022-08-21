@@ -48,20 +48,20 @@ def analyze_video(
             success = video_info.get_time(vid_info, time_file=time_file)
             if not success:
                 logger.warning(f"\n\nGet time failed for {video_path}")
-                return 1
+                return None
             
             data = pe.read_dlc_csv(vid_info)
             data = postprocess.refine_data(data)
             data = postprocess.standardize_data(data)
             data = postprocess.engineering(data)
-            data = postprocess.merge(vid_info, data, timestamp_file, vid_info['fps'])
+            data = postprocess.merge(vid_info, data, timestamp_file)
             video_info.save_data(vid_info, data)
             video_info.save_info(vid_info)
 
         logger.info("Done!")
         
     except Exception as e:
-        logger.warning(f"\n\nException encoutered for {video_path}")
+        logger.warning(f"\n\nException encountered for {video_path}")
         logger.exception(e)
         if raise_exception:
             raise e
@@ -83,7 +83,7 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
 
     if recursive and utils.is_generated(folder_path):
         logger.info(f"Skipping folder {folder_path}...")
-        return 1
+        return None
     
     logger.info(f"Start analyzing {folder_path}...")
     
@@ -102,4 +102,4 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
 def parallel_postprocessing(root_folder, **kwargs) -> None:
     all_videos = list(filter(lambda x: 'DLC' not in x, 
                       glob.glob(os.path.join(root_folder, "**/*.mp4"), recursive=True)))
-    results = Parallel(n_jobs=8)(delayed(analyze_video)(video, **kwargs) for video in all_videos)
+    _ = Parallel(n_jobs=8)(delayed(analyze_video)(video, **kwargs) for video in all_videos)

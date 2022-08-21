@@ -1,5 +1,8 @@
 *.ipynb
 
+# pycharm
+.idea
+
 # test folder
 tests/
 notebooks/

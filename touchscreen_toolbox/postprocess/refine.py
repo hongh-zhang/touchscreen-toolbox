@@ -11,7 +11,7 @@ from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
 
 # prediction refinement
 # ----------------------------------------------
-def refine_data(data: pd.DataFrame) -> None:
+def refine_data(data: pd.DataFrame) -> pd.DataFrame:
     """Refine pose estimation data"""
     data = data.copy()
     data = cutoff(data)
@@ -20,7 +20,6 @@ def refine_data(data: pd.DataFrame) -> None:
     data = savgol_filter(data)
     return data
 
-    
 
 def cutoff(data: pd.DataFrame, p_cutoff: float = cfg.P_CUTOFF):
     """
@@ -59,7 +58,7 @@ def median_filter(data: pd.DataFrame, window_len: int = 5):
     return data
 
 
-def savgol_filter(data: pd.DataFrame, window_len: int=5, polyorder: int=1, deriv=0, delta=1.0) -> pd.DataFrame:
+def savgol_filter(data: pd.DataFrame, window_len: int = 5, polyorder: int = 1, deriv=0, delta=1.0) -> pd.DataFrame:
     """
     Smooth trajectory with Savitzky-Golay filter
     """
@@ -67,6 +66,7 @@ def savgol_filter(data: pd.DataFrame, window_len: int=5, polyorder: int=1, deriv
     data = data.copy()
 
     for i in range(data.shape[1]):
-        data.iloc[:, i] = scipy.signal.savgol_filter(data.iloc[:, i], window_len, polyorder=polyorder, deriv=deriv, delta=delta)
+        data.iloc[:, i] = scipy.signal.savgol_filter(data.iloc[:, i], window_len, polyorder=polyorder, deriv=deriv,
+                                                     delta=delta)
 
     return data

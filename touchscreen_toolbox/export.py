@@ -12,9 +12,9 @@ from . import video_info
 def save_result(dest, mouse, count, result_path, output_format='.csv'):
     output_path = os.path.join(dest, str(mouse), str(mouse)+'-'+str(count)+output_format)
     result = utils.read_result(result_path)
-    if output_format=='.csv':
+    if output_format == '.csv':
         result.to_csv(output_path)
-    elif output_format=='.h5':
+    elif output_format == '.h5':
         result.to_hdf(output_path, str(count))
 
 
