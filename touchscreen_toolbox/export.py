@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import pandas as pd
 from natsort import natsorted
 from collections import defaultdict
 from joblib import Parallel, delayed
@@ -9,53 +10,78 @@ from . import utils
 from . import video_info
 
 
-def save_result(dest, mouse, count, result_path, output_format='.csv'):
-    output_path = os.path.join(dest, str(mouse), str(mouse)+'-'+str(count)+output_format)
-    result = utils.read_result(result_path)
-    if output_format == '.csv':
-        result.to_csv(output_path)
-    elif output_format == '.h5':
-        result.to_hdf(output_path, str(count))
-
-
-def export(root, dest):
-    """
-    Organize and export all results from <root> to <dest> folder
-    """
-    all_videos = list(filter(lambda x: 'DLC' not in x, 
-                             glob.glob(os.path.join(root, "**/*.mp4"), recursive=True)))
+def export_results(root: str, dest: str, n_jobs=4) -> None:
+    """Export results from <root> to <dest>"""
+    results, skipped = list_results(root)
     
-    # list all mouse-exp_date pairs
-    # df[mouse id][experiment date] = path to result
-    df = defaultdict(dict)
+    for animal in results.keys():
+        
+        # read all result for the animal into memory
+        ls = Parallel(n_jobs=n_jobs)(delayed(_get_result)(f, animal) for f in natsorted(results[animal]))
+        
+        # concat, sort, then save
+        save_path = os.path.join(dest, str(animal)+'.h5')
+        (pd.concat(ls, axis=0)
+         .sort_index(level=['ko','id','block','frame'], sort_remaining=False)
+         .to_hdf(save_path, str(animal)))
+    
+    # record skipped videos
+    utils.save_json(natsorted(skipped), 
+                    os.path.join(dest, 'skipped.json'))
+
+# for multiprocessing
+def _get_result(f: str, animal_id: int) -> pd.DataFrame:
+    return multiindex_row(utils.read_result(f), int(animal_id))
+
+
+def list_results(root: str) -> (dict, list):
+    """
+    Returns
+    ------
+    results: dict
+        dictionary of all processed results
+        results[id] = list of result csv
+        
+    skipped: list
+        list of skipped videos (no 'post_result' found)
+    """
+    all_videos = glob.glob(os.path.join(root, "**/*.mp4"), recursive=True)
+    all_videos = list(filter(lambda x: 'DLC' not in x, all_videos))  # filter out videos created by preprocess
+    
     skipped = []
+    results = defaultdict(list)
     for f in all_videos:
         try:
+            # read saved vid_info to locate postprocessing result
             info = video_info.get_vid_info(f, verbose=False)
-            df[info['mouse_id']][info['exp_date']] = os.path.join(info['dir'], info['post_result'])
+            results[info['mouse_id']].append(os.path.join(info['dir'], info['post_result']))
         except KeyError:
+            # post_result not found
             skipped.append(f)
-            
-    # reformat dictionary to count experiment number
-    df2 = []
-    for mouse in natsorted(df.keys()):
-        count = 0
-        for exp in natsorted(df[mouse].keys()):
-            count += 1
-            result_path = df[mouse][exp]
-            df2.append((mouse, count, result_path))
     
-    # save
-    for mouse in set(list(zip(*df2))[0]):
-        folder_path = os.path.join(dest, mouse)
-        os.mkdir(folder_path)
-    Parallel(n_jobs=8)(delayed(save_result)(dest, *i) for i in df2)
+    return results, skipped
+
+
+def multiindex_row(df: pd.DataFrame, mouse_id: int) -> pd.DataFrame:
     
-    with open(os.path.join(dest, 'skipped.json'), 'w') as f:
-        json.dump(natsorted(skipped), f, indent=4)
+    # drop buffered frames & last trial
+    df.drop(df[df[('task','state_')]==0].index, axis=0, inplace=True)
+    df.drop(df[df[('task','trial')]==df[('task', 'trial')].max()].index, axis=0, inplace=True)
     
-    df3 = defaultdict(dict)
-    for i in df2:
-        df3[i[0]][i[1]] = i[2]
-    with open(os.path.join(dest, 'index.json'), 'w') as f:
-        json.dump(df3, f, indent=4)
+    # block_ = 0 or 1 to distinguish 1st & 2nd block in the same session 
+    block_ = (df[('task','block')] - df[('task','block')].min()).astype(int)
+    
+    # form index: ko, id, block, block_, trial, state_, frame
+    multi_index = [df[('task','knockout')].astype(int), 
+                   [int(mouse_id) for i in df.index], 
+                   df[('task','block')].astype(int),
+                   block_,
+                   df[('task','trial_')].astype(int), 
+                   df[('task','state_')].astype(int), 
+                   df.index]
+    
+    # assign new index to df
+    df.drop([('task','knockout'), ('task','block'), ('task','trial'), ('task','trial_'), ('task','state_'), ('task','male')], axis=1, inplace=True)
+    df.index = pd.MultiIndex.from_arrays(multi_index)
+    df.index.names = ['ko','id','block','block_','trial','state_','frame']
+    return df

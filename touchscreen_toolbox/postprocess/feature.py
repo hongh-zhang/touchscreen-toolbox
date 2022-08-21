@@ -8,14 +8,10 @@
 # 'angv': angular velocity
 
 
-import os
-import sys
 import numpy as np
 import pandas as pd
-from math import pi
 from touchscreen_toolbox import utils
 from touchscreen_toolbox import config as cfg
-from itertools import combinations
 
 
 def engineering(data: pd.DataFrame) -> pd.DataFrame:
@@ -24,9 +20,9 @@ def engineering(data: pd.DataFrame) -> pd.DataFrame:
     internal = internal_behaviour(data).set_index(data.index)
     external = external_behaviour(data).set_index(data.index)
 
-    data = pd.concat([make_multiindex(data, 'coordinate'),
-                      make_multiindex(internal, 'internal'),
-                      make_multiindex(external, 'external')], axis=1)
+    data = pd.concat([multiindex_col(data, 'coordinate'),
+                      multiindex_col(internal, 'internal'),
+                      multiindex_col(external, 'external')], axis=1)
 
     return data.round(decimals=cfg.DECIMALS)
 
@@ -99,7 +95,7 @@ def external_behaviour(data: pd.DataFrame):
     return new.round(decimals=cfg.DECIMALS)
 
 
-def make_multiindex(df: pd.DataFrame, name: str):
+def multiindex_col(df: pd.DataFrame, name: str):
     """Add a top layer index <name> to all columns in <df>"""
     df = df.copy()
     multi_index_level_0 = [name for _col in df.columns]

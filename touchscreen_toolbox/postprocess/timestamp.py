@@ -3,7 +3,7 @@ import h5py
 import numpy as np
 import pandas as pd
 import touchscreen_toolbox.config as cfg
-from .feature import make_multiindex
+from .feature import multiindex_col
 
 state_mapping = {1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 3, 7: 4, 8: 5, 9: 6, 0: 0, 10: 0, 99: 0}
 
@@ -18,7 +18,7 @@ def merge(vid_info, data, timestamp_file):
     data2 = merge_states(data2, states, vid_info)
     data2 = merge_trials(data2, trials)
 
-    data2 = make_multiindex(data2, 'task')
+    data2 = multiindex_col(data2, 'task')
     return pd.concat([data, data2], axis=1)
 
 

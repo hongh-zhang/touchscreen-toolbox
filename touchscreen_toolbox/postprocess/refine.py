@@ -1,12 +1,8 @@
-import os
 import numpy as np
 import pandas as pd
-from itertools import groupby
 import scipy.signal
 
 import touchscreen_toolbox.config as cfg
-import touchscreen_toolbox.utils as utils
-from touchscreen_toolbox.pose_estimation.dlc import read_dlc_csv
 
 
 # prediction refinement

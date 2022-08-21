@@ -34,7 +34,7 @@ def dlc_analyze(vid_info: dict) -> None:
     new_files = [f for f in utils.find_files(vid_info["dir"]) if f not in curr_files]
     csv = [f for f in new_files if f.endswith(".csv")][0]
     vid_info["files"] = new_files
-    vid_info["result"] = csv
+    vid_info["dlc_result"] = csv
 
 
 def cleanup(vid_info: dict) -> None:  # TODO:  enter/exit to cover all files (e.g. _r.mp4)
@@ -77,7 +77,7 @@ def read_dlc_csv(path: Union[str, dict], frames: tuple = None) -> pd.DataFrame:
     Read pose estimation result produced by DLC
     """
     if type(path) == dict:  # vid_info
-        return read_dlc_csv(os.path.join(path["dir"], path["result"]), path['frames'])
+        return read_dlc_csv(os.path.join(path["dir"], path["dlc_result"]), path['frames'])
     elif type(path) == str:  # csv path
         data = pd.read_csv(path,
                            skiprows=[0, 1, 2, 3],

@@ -1,8 +1,5 @@
-import os
-import sys
 import numpy as np
 import pandas as pd
-from itertools import groupby
 import touchscreen_toolbox.config as cfg
 import touchscreen_toolbox.utils as utils
 
@@ -34,11 +31,12 @@ def standardize_data(data: pd.DataFrame) -> pd.DataFrame:
     return data.round(decimals=cfg.DECIMALS)
 
 
+# corner version
 # def standardize_data(data: pd.DataFrame) -> None:
 #     """Standardize pose estimation data"""
-    
+
 #     data = data.copy()
-    
+
 #     # flip
 #     data[cfg.YCOLS] *= -1
 
@@ -54,9 +52,9 @@ def standardize_data(data: pd.DataFrame) -> pd.DataFrame:
 #     )
 #     for xcol, ycol in zip(cfg.XCOLS, cfg.YCOLS):
 #         data[[xcol, ycol]] = transformer.transform(data[[xcol, ycol]].values)
-    
+
 #     data = fillna(data)
-    
+
 #     return data.round(decimals=cfg.DECIMALS)
 
 
