@@ -50,7 +50,7 @@ def cleanup(vid_info: dict) -> None:  # TODO:  enter/exit to cover all files (e.
 
     # rewrite file path
     vid_info["files"] = [os.path.join(cfg.DLC_FOLDER, x) for x in vid_info["files"]]
-    vid_info["result"] = os.path.join(cfg.DLC_FOLDER, vid_info["result"])
+    vid_info["dlc_result"] = os.path.join(cfg.DLC_FOLDER, vid_info["dlc_result"])
 
 
 # def label_video(video_path):

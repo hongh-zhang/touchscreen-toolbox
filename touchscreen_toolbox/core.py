@@ -32,7 +32,7 @@ def analyze_video(
 
         # pose estimate
         if pose:
-            if not (('result' in vid_info) or force_pose):
+            if not (('dlc_result' in vid_info) or force_pose):
                 logger.info("Pose estimating...")
                 pe.preprocess_video(vid_info)
                 pe.dlc_analyze(vid_info)
