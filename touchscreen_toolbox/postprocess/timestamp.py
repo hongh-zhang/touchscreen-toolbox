@@ -85,12 +85,66 @@ def count_trials(data: pd.DataFrame):
 
 def merge_trials(data: pd.DataFrame, trials: pd.DataFrame):
     """Merge trial information (reward probability etc.)"""
+    trials = process_trials(trials)
     trials = trials.drop('time', axis=1)
-    merged = data.reset_index().merge(trials, how='left', on='trial').set_index('frame')
+    merged = data.reset_index().merge(trials.convert_dtypes(), how='left', on='trial').set_index('frame')
     for col in trials.columns:
         merged[col] = merged[col].fillna(method='ffill')
 
     return merged
+
+
+def process_trials(data: pd.DataFrame) -> pd.DataFrame:
+    data = data.astype(float)
+    data['P_contrast'] = data['P_left'] - data['P_right']
+    data['optimal'] = np.logical_or(((data['P_contrast'] > 0) & data['left_response']),
+                                    ((data['P_contrast'] < 0) & data['right_response'])).astype(int)
+
+    # consecutive reward / loss
+    cons_reward = 0
+    ls_cons_reward = []
+    ls_unexpectation = []
+
+    for reward in data['reward']:
+        unexpectation = 0
+        if cons_reward >= 0 and reward:
+            cons_reward += 1
+        elif cons_reward <= 0 and not reward:
+            cons_reward -= 1
+        else:
+            cons_reward = 1 if reward else -1
+            unexpectation = -ls_cons_reward[-1]
+        ls_cons_reward.append(cons_reward)
+        ls_unexpectation.append(unexpectation)
+
+    data['cons_reward'] = ls_cons_reward
+    data['unexpectation'] = ls_unexpectation
+
+    # win-stay-lose-shift
+    # 1: win stay, 2: lose shift, 0: False
+    switch = (data['left_response'].diff() != 0).astype(int)
+    prev_reward = np.insert(data['reward'].values, 0, 0)[:-1]
+    data['switch'] = switch
+    data['prev_reward'] = prev_reward
+
+    win_stay = (prev_reward & np.logical_not(switch))
+    lose_shift = (switch & np.logical_not(prev_reward))
+
+    data['win_stay'] = 0
+    data['win_stay'] += win_stay.astype(int) + lose_shift.astype(int) * 2
+
+    data['rare_reward'] = np.logical_or(
+        data['reward'].astype(bool) & (data['P_contrast'] > 0) & ~data['left_response'].astype(bool),
+        data['reward'].astype(bool) & (data['P_contrast'] < 0) & data['left_response'].astype(bool)
+    ).astype(int)
+    data['rare_omission'] = np.logical_or(
+        ~data['reward'].astype(bool) & (data['P_contrast'] < 0) & ~data['left_response'].astype(bool),
+        ~data['reward'].astype(bool) & (data['P_contrast'] > 0) & data['left_response'].astype(bool)
+    ).astype(int)
+
+    data.drop(['right_response', 'P_left', 'P_right', 'prev_response'], axis=1, inplace=True)
+
+    return data
 
 
 # helper

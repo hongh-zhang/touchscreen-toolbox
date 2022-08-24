@@ -1,6 +1,6 @@
 import os
+import json
 import shutil
-import pickle
 import logging
 import pandas as pd
 from natsort import os_sorted
@@ -113,16 +113,10 @@ def is_valid_folder(folder_path):
     return (cfg.DLC_FOLDER in ls) and (cfg.RST_FOLDER in ls) and (cfg.INF_FOLDER in ls)
 
 
-def pickle_save(obj, path):
-    with open(path, "wb") as file:
-        pickle.dump(obj, file)
-
-
-def pickle_load(path):
-    with open(path, "rb") as file:
-        obj = pickle.load(file)
-    return obj
-
-
 def read_result(csv_path: str):
     return pd.read_csv(csv_path, index_col=0, header=[0, 1])
+
+
+def save_json(file_path, obj):
+    with open(file_path, 'w') as f:
+        json.dump(obj, f)
