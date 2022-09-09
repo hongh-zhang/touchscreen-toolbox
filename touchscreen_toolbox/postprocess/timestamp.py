@@ -142,6 +142,11 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
         ~data['reward'].astype(bool) & (data['P_contrast'] > 0) & data['left_response'].astype(bool)
     ).astype(int)
 
+    # reverse trial number in 1st block
+    if len(data['block'].unique()) > 1:
+        block1_idx = (data['trial'] == data['trial_'])
+        data.loc[block1_idx, 'trial'] = data.loc[block1_idx, 'trial'][::-1]
+
     data.drop(['right_response', 'P_left', 'P_right', 'prev_response'], axis=1, inplace=True)
 
     return data

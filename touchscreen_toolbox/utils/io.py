@@ -117,6 +117,6 @@ def read_result(csv_path: str):
     return pd.read_csv(csv_path, index_col=0, header=[0, 1])
 
 
-def save_json(file_path, obj):
-    with open(file_path, 'w') as f:
+def save_json(obj, save_path):
+    with open(save_path, 'w') as f:
         json.dump(obj, f)

@@ -1,5 +1,6 @@
 import os
 import glob
+import logging
 import pandas as pd
 from natsort import natsorted
 from collections import defaultdict
@@ -8,6 +9,7 @@ from joblib import Parallel, delayed
 from . import utils
 from . import video_info
 
+logger = logging.getLogger(__name__)
 
 def export_results(root: str, dest: str, n_jobs=8) -> None:
     """Export results from <root> to <dest>"""
@@ -22,6 +24,8 @@ def export_results(root: str, dest: str, n_jobs=8) -> None:
         (pd.concat(ls, axis=0)
          .sort_index(level=['ko', 'id', 'block', 'frame'], sort_remaining=False)
          .to_hdf(save_path, str(animal)))
+
+        logger.info(f"Saved results for {animal}")
 
     # record skipped videos
     utils.save_json(natsorted(skipped),
