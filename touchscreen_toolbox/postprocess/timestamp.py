@@ -99,7 +99,8 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
     data['P_contrast'] = data['P_left'] - data['P_right']
     data['optimal'] = np.logical_or(((data['P_contrast'] > 0) & data['left_response']),
                                     ((data['P_contrast'] < 0) & data['right_response'])).astype(int)
-
+    data['rare'] = np.logical_or(((data['optimal']==1) & (data['reward']==0)),
+                                 ((data['optimal']==0) & (data['reward']==1)))
     # consecutive reward / loss
     cons_reward = 0
     ls_cons_reward = []
@@ -124,23 +125,20 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
     # 1: win stay, 2: lose shift, 0: False
     switch = (data['left_response'].diff() != 0).astype(int)
     prev_reward = np.insert(data['reward'].values, 0, 0)[:-1]
+    prev_rare = np.insert(data['rare'].values, 0, 0)[:-1]
     data['switch'] = switch
     data['prev_reward'] = prev_reward
 
-    win_stay = (prev_reward & np.logical_not(switch))
-    lose_shift = (switch & np.logical_not(prev_reward))
-
+    win_stay   = (prev_reward & ~prev_rare & ~switch)
+    lose_shift = (~prev_reward & ~prev_rare & switch)
+    rare_stay  = (prev_reward & prev_rare & ~switch)
+    rare_shift = (~prev_reward & prev_rare & switch)
+    
     data['win_stay'] = 0
-    data['win_stay'] += win_stay.astype(int) + lose_shift.astype(int) * 2
-
-    data['rare_reward'] = np.logical_or(
-        data['reward'].astype(bool) & (data['P_contrast'] > 0) & ~data['left_response'].astype(bool),
-        data['reward'].astype(bool) & (data['P_contrast'] < 0) & data['left_response'].astype(bool)
-    ).astype(int)
-    data['rare_omission'] = np.logical_or(
-        ~data['reward'].astype(bool) & (data['P_contrast'] < 0) & ~data['left_response'].astype(bool),
-        ~data['reward'].astype(bool) & (data['P_contrast'] > 0) & data['left_response'].astype(bool)
-    ).astype(int)
+    data['win_stay'] += (win_stay.astype(int)
+                         + lose_shift.astype(int) * 2
+                         + rare_stay.astype(int) * 3
+                         + rare_shift.astype(int) * 4)
 
     # reverse trial number in 1st block
     if len(data['block'].unique()) > 1:
