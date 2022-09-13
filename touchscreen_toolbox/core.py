@@ -1,7 +1,9 @@
 import os
 import glob
 import logging
+from typing import Union
 from joblib import Parallel, delayed
+
 from . import utils
 from . import video_info
 from . import postprocess
@@ -103,3 +105,30 @@ def parallel_postprocessing(root_folder, **kwargs) -> None:
     all_videos = list(filter(lambda x: 'DLC' not in x, 
                       glob.glob(os.path.join(root_folder, "**/*.mp4"), recursive=True)))
     _ = Parallel(n_jobs=8)(delayed(analyze_video)(video, **kwargs) for video in all_videos)
+
+    
+    
+def label_video(video: Union[str, dict]) -> None:
+    """Label video with pose estimation output"""
+    if type(video) == str:
+        label_video(video_info.get_vid_info(video))
+    elif type(video) == dict:
+        
+        if len(video['prep']) > 0:
+            raise NotImplementedError("Does not support preprocessed video yet")        # <- TODO
+        
+        # preprocessed video
+        if video['path'] != video['target_path']:
+            pe.dlc_label_video(video['target_path'])
+        
+        # unpreprocessed video
+        else:
+            try:
+                utils.move_dlc_files(video, direction=0)
+                pe.dlc_label_video(video['path'])
+            except Exception as err:
+                raise(err)
+            finally:
+                utils.move_dlc_files(video, direction=1)
+    else:
+        raise TypeError

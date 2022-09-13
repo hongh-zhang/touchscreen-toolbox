@@ -141,9 +141,15 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
                          + rare_shift.astype(int) * 4)
 
     # reverse trial number in 1st block
-    if len(data['block'].unique()) > 1:
-        block1_idx = (data['trial'] == data['trial_'])
-        data.loc[block1_idx, 'trial'] = data.loc[block1_idx, 'trial'][::-1]
+
+    data.loc[:, 'block_trial'] = data['trial']  # [1,n/2] trial within block
+
+    data.loc[:, 'trial_2nd'] = data['block_trial']  # trial after 2nd block
+    if len(data['block'].unique()) > 1:  # if session has 2 blocks
+        block1_idx = (data['block'] == data['block'].unique()[0])
+        data.loc[block1_idx, 'trial_2nd'] = -(data.loc[block1_idx, 'trial_2nd'][::-1].values)
+
+    data.loc[:, 'trial'] = list(range(1, 1 + len(data)))  # [1,n] 'trial within session' (for merging)
 
     data.drop(['right_response', 'P_left', 'P_right', 'prev_response'], axis=1, inplace=True)
 

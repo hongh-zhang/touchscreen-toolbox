@@ -11,6 +11,7 @@ from . import video_info
 
 logger = logging.getLogger(__name__)
 
+
 def export_results(root: str, dest: str, n_jobs=8) -> None:
     """Export results from <root> to <dest>"""
     results, skipped = list_results(root)
@@ -24,7 +25,7 @@ def export_results(root: str, dest: str, n_jobs=8) -> None:
         (pd.concat(ls, axis=0)
          .sort_index(level=['ko', 'id', 'block', 'frame'], sort_remaining=False)
          .to_hdf(save_path, str(animal)))
-
+        
         logger.info(f"Saved results for {animal}")
 
     # record skipped videos
@@ -66,10 +67,10 @@ def list_results(root: str) -> (defaultdict, list):
 
 
 def multiindex_row(df: pd.DataFrame, mouse_id: int) -> pd.DataFrame:
-    # drop buffered frames & last trial
-    df.drop(df[df[('task', 'state_')] == 0].index, axis=0, inplace=True)
-    df.drop(df[df[('task', 'trial')] == df[('task', 'trial')].max()].index, axis=0, inplace=True)
-
+    
+    df.drop(df[df[('task', 'state_')] == 0].index, axis=0, inplace=True) # drop buffered frames
+    df.drop(df[df[('task', 'trial')] == df[('task', 'trial')].max()].index, axis=0, inplace=True)  # drop last trial
+    
     # block_ = 0 or 1 to distinguish 1st & 2nd block in the same session 
     block_ = (df[('task', 'block')] - df[('task', 'block')].min()).astype(int)
 
@@ -78,12 +79,12 @@ def multiindex_row(df: pd.DataFrame, mouse_id: int) -> pd.DataFrame:
                    [int(mouse_id) for _ in df.index],
                    df[('task', 'block')].astype(int),
                    block_,
-                   df[('task', 'trial_')].astype(int),
+                   df[('task', 'block_trial')].astype(int),
                    df[('task', 'state_')].astype(int),
                    df.index]
 
     # assign new index to df
-    df.drop([('task', 'knockout'), ('task', 'block'), ('task', 'trial'), ('task', 'trial_'), ('task', 'state_'),
+    df.drop([('task', 'knockout'), ('task', 'block'), ('task', 'trial'), ('task', 'block_trial'), ('task', 'state_'),
              ('task', 'male')], axis=1, inplace=True)
     df.index = pd.MultiIndex.from_arrays(multi_index)
     df.index.names = ['ko', 'id', 'block', 'block_', 'trial', 'state_', 'frame']

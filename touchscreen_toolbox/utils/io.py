@@ -64,39 +64,43 @@ def move_files(files: list, curr_folder: str, targ_folder: str):
         os.rename(file_path, new_path)
 
 
-def find_files(folder_path: str, prefix: str = False, suffix: str = False):
-    """
-    Find all file names inside <folder_path>
-    with the given <prefix> and/or <suffix>
-    """
-
-    ls = os.listdir(folder_path)
-
-    if prefix:
-        ls = list(filter(lambda x: x.startswith(prefix), ls))
-    if suffix:
-        ls = list(filter(lambda x: x.endswith(suffix), ls))
-
-    return ls
+def find_files(folder_path: str, prefix: str = "*", suffix: str = "*"):
+    return glob.glob(os.path.join(folder_path, prefix+suffix))
 
 
-def move_dlc_files(video_path, direction=0):
+def move_dlc_files(vid_info, direction=0):
     """
     Move dlc output files,
     0: DLC folder -> video folder,
     1: video folder -> DLC folder
     """
-    video_name = os.path.basename(video_path)
-    video_folder = os.path.dirname(video_path)
-    assert is_valid_folder(video_folder), "Invalid folder"
-    dlc_folder = os.path.join(video_folder, cfg.DLC_FOLDER)
+    dlc_files = map(os.path.basename, vid_info['files'])
+    vid_dir = vid_info['dir']
+    dlc_dir = os.path.join(vid_dir, cfg.DLC_FOLDER)
 
     if direction == 0:
-        dlc_files = find_files(dlc_folder, prefix=video_name)
-        move_files(dlc_files, dlc_folder, video_folder)
+        move_files(dlc_files, dlc_dir, vid_dir)
     else:
-        dlc_files = find_files(video_folder, prefix=video_name)
-        move_files(dlc_files, video_folder, dlc_folder)
+        move_files(dlc_files, vid_dir, dlc_dir)
+
+
+# def move_dlc_files(video_path, direction=0):
+#     """
+#     Move dlc output files,
+#     0: DLC folder -> video folder,
+#     1: video folder -> DLC folder
+#     """
+#     video_name = os.path.basename(video_path)
+#     video_folder = os.path.dirname(video_path)
+#     assert is_valid_folder(video_folder), "Invalid folder"
+#     dlc_folder = os.path.join(video_folder, cfg.DLC_FOLDER)
+
+#     if direction == 0:
+#         dlc_files = find_files(dlc_folder, prefix=video_name)
+#         move_files(dlc_files, dlc_folder, video_folder)
+#     else:
+#         dlc_files = find_files(video_folder, prefix=video_name)
+#         move_files(dlc_files, video_folder, dlc_folder)
 
 
 def initialize_folders(vid_info: dict) -> None:
@@ -119,4 +123,4 @@ def read_result(csv_path: str):
 
 def save_json(obj, save_path):
     with open(save_path, 'w') as f:
-        json.dump(obj, f)
+        json.dump(obj, f, indext=4, sort_keys=True)

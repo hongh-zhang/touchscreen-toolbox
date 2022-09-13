@@ -53,31 +53,16 @@ def cleanup(vid_info: dict) -> None:  # TODO:  enter/exit to cover all files (e.
     vid_info["dlc_result"] = os.path.join(cfg.DLC_FOLDER, vid_info["dlc_result"])
 
 
-# def label_video(video_path):
-
-#     video_name  = os.path.basename(video_path)
-#     folder_path = os.path.dirname(video_path)
-#     dlc_folder  = os.path.join(folder_path, DLC_FOLDER)
-
-#     # find relevant files & move to video directory
-#     files = [f for f in os.listdir(dlc_folder) if f.startswith(video_name[:-4])]
-#     move_files(files, dlc_folder, folder_path)
-
-#     # label
-#     # dlc somehow doesn't recognize relative path
-#     dlc.create_labeled_video(DLC_CONFIG, os.path.abspath(video_path),
-#                              videotype='mp4', save_frames = False, filtered=True)
-
-#     # move back files
-#     move_files(files, folder_path, dlc_folder)
-
-
 def read_dlc_csv(path: Union[str, dict], frames: tuple = None) -> pd.DataFrame:
     """
     Read pose estimation result produced by DLC
     """
     if type(path) == dict:  # vid_info
-        return read_dlc_csv(os.path.join(path["dir"], path["dlc_result"]), path['frames'])
+        if 'frames' in path:
+            return read_dlc_csv(os.path.join(path["dir"], path["dlc_result"]), path['frames'])
+        else:
+            return read_dlc_csv(os.path.join(path["dir"], path["dlc_result"]))
+    
     elif type(path) == str:  # csv path
         data = pd.read_csv(path,
                            skiprows=[0, 1, 2, 3],
@@ -89,3 +74,8 @@ def read_dlc_csv(path: Union[str, dict], frames: tuple = None) -> pd.DataFrame:
             return data
     else:
         raise TypeError("Invalid input type")
+
+        
+def dlc_label_video(video_path: str):
+    return dlc.create_labeled_video(cfg.DLC_CONFIG, os.path.abspath(video_path),
+                                    videotype='mp4', save_frames = False, filtered=False)
