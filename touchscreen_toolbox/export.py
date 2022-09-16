@@ -19,7 +19,7 @@ def export_results(root: str, dest: str, n_jobs=8) -> None:
     for animal in results.keys():
         # read all result for the animal into memory
         ls = Parallel(n_jobs=n_jobs)(delayed(_get_result)(f, animal) for f in natsorted(results[animal]))
-
+        
         # concat, sort, then save
         save_path = os.path.join(dest, str(animal) + '.h5')
         (pd.concat(ls, axis=0)
@@ -67,7 +67,11 @@ def list_results(root: str) -> (defaultdict, list):
 
 
 def multiindex_row(df: pd.DataFrame, mouse_id: int) -> pd.DataFrame:
-    
+    """
+    Multi index rows of the result dataframe,
+    ko, id, block, block_, trial, state_, frame
+    and sort according to block number
+    """
     df.drop(df[df[('task', 'state_')] == 0].index, axis=0, inplace=True) # drop buffered frames
     df.drop(df[df[('task', 'trial')] == df[('task', 'trial')].max()].index, axis=0, inplace=True)  # drop last trial
     

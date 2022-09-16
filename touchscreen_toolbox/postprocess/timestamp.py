@@ -44,8 +44,7 @@ def merge_info(data, attrs):
 
 def merge_states(data: pd.DataFrame, states: pd.DataFrame, vid_info: dict):
     """Merge state timestamp"""
-    # align starting time
-    states['time'] += vid_info['time'][0] - cfg.TIME_BUFFER[0]
+    # align starting time, with buffer
     states['frame'] = (states['time'] * vid_info['fps']).astype(int)
     states = states.drop('time', axis=1)
 
@@ -86,7 +85,6 @@ def count_trials(data: pd.DataFrame):
 def merge_trials(data: pd.DataFrame, trials: pd.DataFrame):
     """Merge trial information (reward probability etc.)"""
     trials = process_trials(trials)
-    trials = trials.drop('time', axis=1)
     merged = data.reset_index().merge(trials.convert_dtypes(), how='left', on='trial').set_index('frame')
     for col in trials.columns:
         merged[col] = merged[col].fillna(method='ffill')
@@ -100,7 +98,7 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
     data['optimal'] = np.logical_or(((data['P_contrast'] > 0) & data['left_response']),
                                     ((data['P_contrast'] < 0) & data['right_response'])).astype(int)
     data['rare'] = np.logical_or(((data['optimal']==1) & (data['reward']==0)),
-                                 ((data['optimal']==0) & (data['reward']==1)))
+                                 ((data['optimal']==0) & (data['reward']==1))).astype(int)
     # consecutive reward / loss
     cons_reward = 0
     ls_cons_reward = []
@@ -123,11 +121,11 @@ def process_trials(data: pd.DataFrame) -> pd.DataFrame:
 
     # win-stay-lose-shift
     # 1: win stay, 2: lose shift, 0: False
-    switch = (data['left_response'].diff() != 0).astype(int)
-    prev_reward = np.insert(data['reward'].values, 0, 0)[:-1]
-    prev_rare = np.insert(data['rare'].values, 0, 0)[:-1]
-    data['switch'] = switch
-    data['prev_reward'] = prev_reward
+    switch = (data['left_response'].diff() != 0)
+    prev_reward = np.insert(data['reward'].values, 0, 0)[:-1].astype(bool)
+    prev_rare = np.insert(data['rare'].values, 0, 0)[:-1].astype(bool)
+    data['switch'] = switch.astype(int)
+    data['prev_reward'] = prev_reward.astype(int)
 
     win_stay   = (prev_reward & ~prev_rare & ~switch)
     lose_shift = (~prev_reward & ~prev_rare & switch)

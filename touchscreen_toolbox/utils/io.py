@@ -123,4 +123,4 @@ def read_result(csv_path: str):
 
 def save_json(obj, save_path):
     with open(save_path, 'w') as f:
-        json.dump(obj, f, indext=4, sort_keys=True)
+        json.dump(obj, f, index=4, sort_keys=True)

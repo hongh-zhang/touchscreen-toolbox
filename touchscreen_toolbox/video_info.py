@@ -2,6 +2,7 @@ import os
 import re
 import cv2
 import json
+import h5py
 import logging
 import numpy as np
 import pandas as pd
@@ -95,7 +96,7 @@ def get_vid_fps(video_path):
     return fps
 
 
-def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> bool:
+def get_time(vid_info: dict, timestamps: str, buffer=cfg.TIME_BUFFER) -> bool:
     """
     Get time to cut video from <time_file>
 
@@ -115,21 +116,36 @@ def get_time(vid_info: dict, time_file: str, buffer=cfg.TIME_BUFFER) -> bool:
         time (in sec) to cut video
     """
     
-    try:
-        times = pd.read_csv(time_file).set_index(["id", "date"])
-        video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
+#     try:
+#         times = pd.read_csv(time_file).set_index(["id", "date"])
+#         video_time = times.loc[(int(vid_info["mouse_id"]), int(vid_info["exp_date"]))]
 
-        start = max(0, video_time["vid_start"] + buffer[0])
-        end = min(vid_info['length'], video_time["vid_end"] + buffer[1])
-        assert start < end
+#         start = max(0, video_time["vid_start"] + buffer[0])
+#         end = min(vid_info['length'], video_time["vid_end"] + buffer[1])
+#         assert start < end
 
-        vid_info["time"] = (start, end)
-        vid_info['frames'] = (round(start * vid_info['fps']),
-                              round(end * vid_info['fps']))
+#         vid_info["time"] = (start, end)
+#         vid_info['frames'] = (round(start * vid_info['fps']),
+#                               round(end * vid_info['fps']))
 
-        return True
+#         return True
     
-    except KeyError:  # when the id-date pair is not found in time_file
+#     except KeyError:  # when the id-date pair is not found in time_file
+#         return False
+    try:
+        with h5py.File(timestamps, 'r') as f:
+            ds = f[f"{vid_info['mouse_id']}/{vid_info['exp_date']}/video"]
+            ds = pd.DataFrame(ds, columns=ds.attrs['headers'])
+            start = max(0, ds["vid_start"].iloc[0] + buffer[0])
+            end = min(vid_info['length'], ds["vid_end"].iloc[0] + buffer[1])
+            assert start < end
+            vid_info["time"] = (start, end)
+            vid_info['frames'] = (round(start * vid_info['fps']),
+                                  round(end * vid_info['fps']))
+
+            return True
+    
+    except KeyError:
         return False
 
 

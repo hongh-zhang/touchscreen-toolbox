@@ -2,6 +2,7 @@ import os
 import glob
 import logging
 from typing import Union
+from natsort import os_sorted
 from joblib import Parallel, delayed
 
 from . import utils
@@ -18,8 +19,7 @@ def analyze_video(
     video_path: str, 
     pose: bool = False, 
     post: bool = False, 
-    time_file: str = False, 
-    timestamp_file: str = False, 
+    timestamps: str = False, 
     raise_exception: bool = False,
     force_pose: bool = False
 ) -> None:
@@ -47,7 +47,7 @@ def analyze_video(
         if post:
             logger.info("Postprocessing...")
             
-            success = video_info.get_time(vid_info, time_file=time_file)
+            success = video_info.get_time(vid_info, timestamps)
             if not success:
                 logger.warning(f"\n\nGet time failed for {video_path}")
                 return None
@@ -56,7 +56,7 @@ def analyze_video(
             data = postprocess.refine_data(data)
             data = postprocess.standardize_data(data)
             data = postprocess.engineering(data)
-            data = postprocess.merge(vid_info, data, timestamp_file)
+            data = postprocess.merge(vid_info, data, timestamps)
             video_info.save_data(vid_info, data)
             video_info.save_info(vid_info)
 
@@ -102,8 +102,8 @@ def analyze_folder(folder_path: str, recursive: bool = False, **kwargs) -> None:
 
 
 def parallel_postprocessing(root_folder, **kwargs) -> None:
-    all_videos = list(filter(lambda x: 'DLC' not in x, 
-                      glob.glob(os.path.join(root_folder, "**/*.mp4"), recursive=True)))
+    all_videos = os_sorted(list(filter(lambda x: 'DLC' not in x, 
+                                glob.glob(os.path.join(root_folder, "**/*.mp4"), recursive=True))))
     _ = Parallel(n_jobs=8)(delayed(analyze_video)(video, **kwargs) for video in all_videos)
 
     
