@@ -29,8 +29,11 @@ def export_results(root: str, dest: str, n_jobs=8) -> None:
         logger.info(f"Saved results for {animal}")
 
     # record skipped videos
-    utils.save_json(natsorted(skipped),
-                    os.path.join(dest, 'skipped.json'))
+    if skipped:
+        utils.save_json(natsorted(skipped),
+                        os.path.join(dest, 'skipped.json'))
+    else:
+        logger.info("All results exported")
 
 
 # for multiprocessing

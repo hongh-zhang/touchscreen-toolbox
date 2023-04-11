@@ -134,10 +134,17 @@ def get_time(vid_info: dict, timestamps: str, buffer=cfg.TIME_BUFFER) -> bool:
 #         return False
     try:
         with h5py.File(timestamps, 'r') as f:
-            ds = f[f"{vid_info['mouse_id']}/{vid_info['exp_date']}/video"]
-            ds = pd.DataFrame(ds, columns=ds.attrs['headers'])
-            start = max(0, ds["vid_start"].iloc[0] + buffer[0])
-            end = min(vid_info['length'], ds["vid_end"].iloc[0] + buffer[1])
+            
+            group = f[f"{vid_info['mouse_id']}/{vid_info['exp_date']}"]
+            
+            start = dict(group.attrs)['task_start'][0]  # read 'task_start' attribute
+            
+            end = np.asarray(group['states'],dtype=float)[-1,-1]     # read the last entry from 'states' dataset
+            
+            # ds = f[f"{vid_info['mouse_id']}/{vid_info['exp_date']}/video"]
+            # ds = pd.DataFrame(ds, columns=ds.attrs['headers'])
+            start = max(0, start + buffer[0])
+            end = min(vid_info['length'], end + buffer[1])
             assert start < end
             vid_info["time"] = (start, end)
             vid_info['frames'] = (round(start * vid_info['fps']),
